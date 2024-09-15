@@ -3,9 +3,7 @@ use std::collections::HashMap;
 use egui::{Color32, ColorImage};
 use tes3::esp::Landscape;
 
-use crate::{CellKey, Dimensions};
-
-static GRID: usize = 9;
+use crate::{CellKey, Dimensions, GRID};
 
 pub fn generate_map(
     dimensions: &Dimensions,
@@ -32,7 +30,8 @@ pub fn generate_map(
                 let hy = grid_y % GRID;
 
                 let heightmap = land.world_map_data.data.clone().to_vec();
-                pixels.push(get_map_color(heightmap[hy][hx] as f32));
+                //pixels.push(get_map_color(heightmap[hy][hx] as f32));
+                pixels.push(unpack_rgb(heightmap[hy][hx]));
             } else {
                 pixels.push(Color32::TRANSPARENT);
             }
@@ -93,4 +92,27 @@ fn get_map_color(h: f32) -> Color32 {
         pixel_color.g as u8,
         pixel_color.b as u8,
     )
+}
+
+pub fn pack_rgb(c: Color32) -> i8 {
+    // Reduce the range of r, g, b to 2 bits each (values between 0–3)
+    let r = (c.r() >> 6) & 0b11; // 2 most significant bits of r
+    let g = (c.g() >> 6) & 0b11; // 2 most significant bits of g
+    let b = (c.b() >> 6) & 0b11; // 2 most significant bits of b
+
+    // Combine the bits into a single i8 value
+    let packed: u8 = (r << 4) | (g << 2) | b;
+
+    // Cast the packed u8 to i8 (unsigned to signed)
+    packed as i8
+}
+
+pub fn unpack_rgb(packed: i8) -> Color32 {
+    // Extract the 2 bits for each channel
+    let r = ((packed >> 4) & 0b11) << 6;
+    let g = ((packed >> 2) & 0b11) << 6;
+    let b = (packed & 0b11) << 6;
+
+    // Return the unpacked values
+    Color32::from_rgb(r as u8, g as u8, b as u8)
 }

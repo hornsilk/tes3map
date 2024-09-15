@@ -24,6 +24,15 @@ impl eframe::App for TemplateApp {
                     if ui.button("Quit").clicked() {
                         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                     }
+
+                    if ui.button("Import").clicked() {
+                        if let Some(file) = rfd::FileDialog::new()
+                            .add_filter("png", &["png"])
+                            .pick_file()
+                        {
+                            self.import_map(file);
+                        }
+                    }
                 });
 
                 ui.menu_button("Help", |ui| {

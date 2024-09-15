@@ -30,6 +30,7 @@ mod eframe_app;
 mod overlay;
 mod views;
 
+const GRID: usize = 9;
 const GRID_SIZE: usize = 16;
 const VERTEX_CNT: usize = 65;
 const DEFAULT_COLOR: Color32 = Color32::TRANSPARENT;

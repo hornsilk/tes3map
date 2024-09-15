@@ -3,10 +3,12 @@ use std::{collections::HashMap, path::PathBuf};
 use egui::{epaint::ColorMode, pos2, ColorImage, Pos2, Shape};
 use image::{imageops, ImageError};
 use log::{debug, error};
-use tes3::esp::{Landscape, Region};
+use tes3::esp::{Landscape, Plugin, Region};
 
 use background::{
-    gamemap::generate_map, heightmap::generate_heightmap, landscape::compute_landscape_image,
+    gamemap::{generate_map, pack_rgb},
+    heightmap::generate_heightmap,
+    landscape::compute_landscape_image,
 };
 use overlay::{paths::get_overlay_path_image, regions::get_region_shapes};
 
@@ -527,5 +529,87 @@ impl TemplateApp {
         }
 
         Ok(())
+    }
+
+    pub fn import_map(&mut self, file: PathBuf) {
+        // load image
+        if let Ok(img) = image::open(&file) {
+            // check dimensions
+            {
+                let height = img.height() as usize;
+                let width = img.width() as usize;
+                let correct_height = self.dimensions.pixel_height(GRID);
+                let correct_width = self.dimensions.pixel_width(GRID);
+                if height != correct_height || width != correct_width {
+                    let msg = format!(
+                        "Incorrect image size: expected ({}, {}), got ({}, {})",
+                        correct_width, correct_height, width, height
+                    );
+                    error!("{}", msg);
+                    rfd::MessageDialog::new()
+                        .set_title("Error")
+                        .set_description(msg)
+                        .set_buttons(rfd::MessageButtons::Ok)
+                        .show();
+                    return;
+                }
+            }
+
+            // get color image
+            let mut raw_pixels = img.to_rgb8().into_raw();
+            //raw_pixels.reverse();
+            let color_image =
+                ColorImage::from_rgb([img.width() as usize, img.height() as usize], &raw_pixels);
+            let pixels = color_image.pixels.clone();
+
+            // calculate records
+            let grid_width = self.dimensions.pixel_width(1);
+            let grid_height = self.dimensions.pixel_height(1);
+            let mut new_records = self.land_records.clone();
+            for grid_y in (0..grid_height) {
+                for grid_x in (0..grid_width) {
+                    // we can divide by grid to get the cell and subtract the bounds to get the cell coordinates
+                    let x = grid_x as i32 + self.dimensions.min_x;
+                    let y = grid_y as i32 + self.dimensions.min_y;
+                    let key = (x, y);
+                    if let Some(land) = new_records.get_mut(&key) {
+                        // set LAND data
+                        let mut heightmap: [[i8; 9]; 9] = [[0; 9]; 9];
+
+                        // get pixels
+                        (0..GRID).for_each(|gy| {
+                            for gx in 0..GRID {
+                                let index = (GRID * grid_x)
+                                    + (GRID * GRID * grid_width * grid_y)
+                                    + gx
+                                    + (GRID * grid_width * gy);
+
+                                let pixel = pixels[index];
+                                heightmap[gy][gx] = pack_rgb(pixel);
+                            }
+                        });
+
+                        land.world_map_data.data = Box::new(heightmap);
+                    } else {
+                        // TODO
+                    }
+                }
+            }
+
+            // save to plugin
+            let mut plugin = Plugin::new();
+            for land in new_records.values() {
+                plugin.objects.push(TES3Object::Landscape(land.clone()));
+            }
+            if let Some(path) = &self.data_files {
+                plugin.save_path(path.join("import_map.esp")).unwrap();
+                rfd::MessageDialog::new()
+                    .set_title("Info")
+                    .set_description("Plugin saved correctly")
+                    .set_buttons(rfd::MessageButtons::Ok)
+                    .show();
+            }
+        }
+        // check dimension
     }
 }
