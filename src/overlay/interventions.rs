@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
 use eframe::epaint::Stroke;
-use egui::{emath::RectTransform, Color32, Shape};
+use egui::{emath::RectTransform, Color32, Rect, Shape};
 use tes3::esp::Cell;
 
-use crate::{dimensions::Dimensions, get_tri_at_cell, CellKey};
+use crate::{dimensions::Dimensions, get_tri_at_cell, get_rect_at_cell, CellKey};
 use voronoice::*;
 use egui::Pos2;
 // use std::cmp::max;
@@ -22,30 +22,19 @@ pub fn create_voronoi_polygons(
     let mut shapes: Vec<Shape> = Vec::new();
 
 
+    let dx = (dimensions.max_x - dimensions.min_x) as f64;
+    let dy = (dimensions.max_y - dimensions.min_y) as f64;
+    let bounding_size = 4.0; //TODO calc this size somehow
+
+    // println!("start verts");
     for key in interventions.keys() {
-        // let center = get_center_from_cell(dimensions, to_screen, key.clone());
-        // centers.push( Point{x: center.x as f64, y:center.y as f64});
-        centers.push( Point{x: (key.0 - dimensions.min_x) as f64, y: (key.1 - dimensions.min_y) as f64});
+        // println!("{},{}",key.0, key.1);
+        centers.push( Point{x: (key.0 as f64) / dx, y: (key.1 as f64) / dy});
     }
-    println!("start verts");
-    for center in centers.clone() {
-        println!("{},{}",center.x, center.y);
-    }
-    println!("end verts");
-    // let temp = to_screen * Pos2{x:(dimensions.max_x - dimensions.min_x) as f32 , y:(dimensions.max_y - dimensions.min_y) as f32};
-    // let bounding_size = (2.0*(max(temp.x.ceil() as i32, temp.y.ceil() as i32) as f64));
-    // let bounding_size = 50.0; //TODO calc this size somehow
-    let bounding_size = 100.0; //TODO calc this size somehow
-
-    let to_screen_voronoi = to_screen.clone();
-    // let to_screen_voronoi =  RectTransform {to:to_screen.to()., from:(to_screen.from()*2)};
-    println!("x:[{},{}], y:[{},{}]", dimensions.min_x,dimensions.max_x, dimensions.min_y, dimensions.max_y);
-
-    // builds a voronoi diagram from the set of sites above, bounded by a square of size 4
-    // let sites = vec![
-    //  Point { x: 0.0, y: 0.0 }, Point { x: 1.0, y: 0.0 }, Point { x: 0.0, y: 1.0 }
-    // ];
-
+    // for center in centers.clone() {
+    //     println!("{},{}",center.x, center.y);
+    // }
+    // println!("end verts");
 
     let my_voronoi = VoronoiBuilder::default()
         .set_sites(centers)
@@ -54,31 +43,36 @@ pub fn create_voronoi_polygons(
         .build()
         .unwrap();
 
-    // println!("Second cell has site {:?}, voronoi vertices {:?} and delaunay triangles {:?}",
-    //     my_cell.site_position(),
-    //     my_cell.iter_vertices().collect::<Vec<&Point>>(),
-    //     my_cell.triangles().iter().collect::<Vec<&usize>>());
-    
-    
-    // let my_cell = my_voronoi.cell(10);
     for my_cell in my_voronoi.iter_cells() {
-
-        let my_verts = my_cell.iter_vertices().collect::<Vec<&Point>>();
-        let n_vertecies = my_verts.len();
-        let mut my_pos2s: Vec<Pos2> = Vec::with_capacity(n_vertecies as usize);
+        // let my_verts = my_cell.iter_vertices().collect::<Vec<&Point>>();
+        // let n_vertecies = my_verts.len();
+        // let mut my_pos2s: Vec<Pos2> = Vec::with_capacity(n_vertecies as usize);
     
-        for vert in my_verts {
-            // let my_pos2 = Pos2{x: (vert.x as f32 + dimensions.min_x as f32), y: (vert.y as f32 + dimensions.min_y as f32)};
-            let my_pos2 = Pos2{x: (vert.x as f32 - dimensions.min_x as f32), y: (vert.y as f32 - dimensions.min_y as f32)};
-            // let my_pos2 = Pos2{x: (vert.x as f32 ), y: (vert.y as f32 )};
-            my_pos2s.push(to_screen_voronoi*my_pos2);
-        }
+        // for vert in my_verts {
+        //     // let my_pos2 = Pos2{x: (vert.x as f32 + dimensions.min_x as f32), y: (vert.y as f32 + dimensions.min_y as f32)};
+        //     // let my_pos2 = Pos2{x: (vert.x as f32 - dimensions.min_x as f32), y: (vert.y as f32 - dimensions.min_y as f32)};
+        //     // let my_pos2 = Pos2{x: (vert.x as f32 ), y: (vert.y as f32 )};
+        //     let my_pos2 = Pos2{x: (vert.x as f32 ), y: (-vert.y as f32 )};
+        //     my_pos2s.push(to_screen_voronoi*my_pos2);
+        // }
         let color = Color32::from_rgb(0, 255, 0);
-        let color2 = Color32::from_rgb(0, 255, 0);
-        let color2 = color2.gamma_multiply(0.0);
-        let my_polygon = Shape::convex_polygon(my_pos2s, color2, Stroke::new(3.0, color));
+        // let color2 = Color32::from_rgb(0, 255, 0);
+        // let color2 = color2.gamma_multiply(0.0);
+        // let my_polygon = Shape::convex_polygon(my_pos2s, color2, Stroke::new(3.0, color));
     
-        shapes.push(my_polygon);
+        
+        // shapes.push(my_polygon);
+        
+        let temp_point = my_cell.site_position();  
+        let temp_shift_x = ((temp_point.x)*dx/bounding_size) as i32;
+        let temp_shift_y = ((temp_point.y)*dy/bounding_size) as i32;
+        let new_x = temp_shift_x - dimensions.min_x;
+        let new_y = temp_shift_y - dimensions.min_y;
+        let my_new_center = Pos2{x:new_x as f32, y:new_y as f32};
+        
+        let radius = 10.0;
+        let my_dot = Shape::circle_filled(to_screen*my_new_center, radius, color);
+        shapes.push(my_dot);
     }
 
 
