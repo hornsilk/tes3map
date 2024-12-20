@@ -16,6 +16,7 @@ pub fn create_voronoi_polygons(
     dimensions: &Dimensions,
     interventions: &HashMap<CellKey, Cell>,
 ) -> Vec<Shape> {
+    println!("Start Voronoi");
     let n_points = interventions.keys().len();
     let mut centers: Vec<Point> = Vec::with_capacity(n_points as usize);
     // let mut shapes: Vec<Shape> = Vec::with_capacity(n_points as usize);
@@ -31,9 +32,9 @@ pub fn create_voronoi_polygons(
         // println!("{},{}",key.0, key.1);
         centers.push( Point{x: (key.0 as f64) / dx, y: (key.1 as f64) / dy});
     }
-    // for center in centers.clone() {
-    //     println!("{},{}",center.x, center.y);
-    // }
+    for center in centers.clone() {
+        println!("{},{}",center.x, center.y);
+    }
     // println!("end verts");
 
     let my_voronoi = VoronoiBuilder::default()
