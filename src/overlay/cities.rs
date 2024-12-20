@@ -16,21 +16,11 @@ pub fn get_intervention_shapes(
     let shapes_len =
         (dimensions.max_x - dimensions.min_x + 1) * (dimensions.max_y - dimensions.min_y + 1);
     let mut shapes: Vec<Shape> = Vec::with_capacity(shapes_len as usize);
-
-    for cy in dimensions.min_y..dimensions.max_y + 1 {
-        for cx in dimensions.min_x..dimensions.max_x + 1 {
-            // get region
-            let key = (cx, cy);
-            if let Some(cell) = interventions.get(&key) {
-                // if cell.name.is_empty() || cell.is_interior() {
-                //     continue;
-                // }
-
-                let rect = get_rect_at_cell(dimensions, to_screen, key);
-                let shape = Shape::rect_stroke(rect, Rounding::default(), Stroke::new(4.0, color));
-                shapes.push(shape);
-            }
-        }
+    
+    for key in interventions.keys() {
+        let rect = get_rect_at_cell(dimensions, to_screen, key.clone());
+        let shape = Shape::rect_stroke(rect, Rounding::default(), Stroke::new(4.0, color));
+        shapes.push(shape);
     }
     shapes
 }
