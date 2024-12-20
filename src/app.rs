@@ -380,7 +380,7 @@ impl TemplateApp {
 
                     let mut all_shapes = vec![];
 
-                    // order is: paths, regions, grid, cities, travel, conflicts
+                    // order is: paths, regions, grid, cities, interventions, travel, conflicts
                     // regions
                     if self.ui_data.overlay_region {
                         let shapes = get_region_shapes(
@@ -408,7 +408,7 @@ impl TemplateApp {
 
                     // interventions
                     if self.ui_data.overlay_cities {
-                        let shapes = overlay::cities::get_intervention_shapes(
+                        let shapes = overlay::interventions::get_intervention_shapes(
                             transform,
                             &self.dimensions,
                             &self.almsivi_interventions,

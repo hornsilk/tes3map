@@ -5,7 +5,7 @@ use log::info;
 
 use crate::app::TooltipInfo;
 use crate::overlay::cities::get_cities_shapes;
-use crate::overlay::cities::get_intervention_shapes;
+use crate::overlay::interventions::get_intervention_shapes;
 use crate::overlay::conflicts::get_conflict_shapes;
 use crate::overlay::grid::get_grid_shapes;
 use crate::overlay::regions::get_region_shapes;

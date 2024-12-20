@@ -13,6 +13,7 @@ A small tool to draw a map of all loaded esps.
   - regions
   - grid
   - cities
+  - intervention maps
   - travel routes
   - cell conflicts
 - Tool tips
