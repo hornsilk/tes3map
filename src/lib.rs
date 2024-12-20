@@ -490,6 +490,19 @@ fn get_rect_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: Cell
     Rect::from_two_pos(to_screen * p00, to_screen * p11)
 }
 
+fn get_tri_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Vec<Pos2> {
+    let p00 = dimensions.tranform_to_canvas(key);
+
+    let scale = 0.5;
+    let p_a =  Pos2::new(p00.x - 0.5 * scale + 0.5, p00.y + 0.5 * scale + 0.5);
+    let p_b =  Pos2::new(p00.x + 0.5, p00.y - 0.5 * scale + 0.5);
+    let p_c =  Pos2::new(p00.x + 0.5 * scale + 0.5, p00.y + 0.5 * scale + 0.5);
+
+    let triangle_vector = vec![to_screen * p_a, to_screen * p_b, to_screen * p_c];
+    triangle_vector
+}
+
+
 //////////////////////////////////////////
 // TES3
 
