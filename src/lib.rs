@@ -103,6 +103,7 @@ pub struct SavedData {
     pub overlay_region: bool,
     pub overlay_grid: bool,
     pub overlay_cities: bool,
+    pub overlay_interventions: bool,
     pub overlay_travel: bool,
     pub overlay_conflicts: bool,
 

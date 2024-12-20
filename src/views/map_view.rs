@@ -116,7 +116,7 @@ impl TemplateApp {
             let shapes = get_cities_shapes(to_screen, &self.dimensions, &self.cell_records);
             painter.extend(shapes);
         }
-        if self.ui_data.overlay_cities {
+        if self.ui_data.overlay_interventions {
             let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.almsivi_interventions);
             painter.extend(shapes);
         }

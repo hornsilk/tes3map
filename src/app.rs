@@ -362,6 +362,7 @@ impl TemplateApp {
                 let any_overlay = self.ui_data.overlay_region
                     || self.ui_data.overlay_grid
                     || self.ui_data.overlay_cities
+                    || self.ui_data.overlay_interventions
                     || self.ui_data.overlay_travel
                     || self.ui_data.overlay_conflicts;
 
@@ -407,7 +408,7 @@ impl TemplateApp {
                     }
 
                     // interventions
-                    if self.ui_data.overlay_cities {
+                    if self.ui_data.overlay_interventions {
                         let shapes = overlay::interventions::get_intervention_shapes(
                             transform,
                             &self.dimensions,
