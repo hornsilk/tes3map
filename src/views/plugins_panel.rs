@@ -1,7 +1,7 @@
 use std::collections::hash_map::Entry;
 
 use log::{info, warn};
-use tes3::esp::{Cell, Landscape, LandscapeTexture, Npc, Plugin, Region, Static};
+use tes3::esp::{Cell, Landscape, LandscapeTexture, Npc, Plugin, Region};
 
 use crate::*;
 
@@ -134,6 +134,7 @@ impl TemplateApp {
         self.regn_records.clear();
         self.travel_edges.clear();
         self.cell_records.clear();
+        self.almsivi_interventions.clear();
         self.cell_conflicts.clear();
 
         // load plugins into memory
@@ -144,6 +145,7 @@ impl TemplateApp {
         let mut cell_conflicts: HashMap<CellKey, Vec<u64>> = HashMap::default();
         let mut travels: HashMap<String, (Vec<CellKey>, String)> = HashMap::default();
         let mut npcs: HashMap<String, CellKey> = HashMap::default();
+        let mut almsivi_interventions: HashMap<CellKey, Cell> = HashMap::default();
 
         let enabled_plugins: Vec<&PluginViewModel> = self
             .plugins
@@ -240,25 +242,17 @@ impl TemplateApp {
                     self.regn_records.insert(region.id.clone(), region.clone());
                 }
 
-                // add almsivi intervention
-                // almsivi = []
-                for mystatic in plugin.objects_of_type::<Static>() {
-                    if mystatic.id == "temples" {
-                        let foo = 2;
-                    }
-                    
+                // add almsivi interventions
+                let almsivi_static_string = "TempleMarker";
+                for cell in plugin.objects_of_type::<Cell>() {
+                    if cell.references.iter().any(|p| p.1.id == almsivi_static_string) {
+                        let coord = (cell.data.grid.0, cell.data.grid.1);
+                        almsivi_interventions.insert(coord, cell.clone());
+                    }                    
                 }
-                // for cell in plugin.objects_of_type::<Cell>() {
-
-                //     for (static_id, _) in almsivis.clone() {
-                //         if cell.references.iter().any(|p| p.1.id == npc_id) {
-                //             npcs.insert(npc_id, key);
-                //         }
-                //     }
-                // }
             }
         }
-
+        
         // travel overlay
         let mut edges: Vec<(String, (CellKey, CellKey))> = vec![];
         for (key, start) in npcs.clone() {
@@ -281,14 +275,15 @@ impl TemplateApp {
             }
         }
         self.travel_edges = ordered_edges;
-
+        
         // get final list of cells
         for (k, v) in cell_conflicts.iter().filter(|p| p.1.len() > 1) {
             self.cell_conflicts.insert(*k, v.to_vec());
         }
-
+        
         self.land_records = land_records;
         self.cell_records = cells;
+        self.almsivi_interventions = almsivi_interventions;
         // self.land_ids = land_id_map;
     }
 }

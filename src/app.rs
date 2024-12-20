@@ -54,7 +54,11 @@ pub struct TemplateApp {
     pub regn_records: HashMap<String, Region>,
     #[serde(skip)]
     pub cell_records: HashMap<CellKey, Cell>,
-
+   
+    // intervention spells
+    #[serde(skip)]
+    pub almsivi_interventions: HashMap<CellKey, Cell>,
+    
     // overlays
     #[serde(skip)]
     pub travel_edges: HashMap<String, Vec<(CellKey, CellKey)>>,
@@ -401,6 +405,17 @@ impl TemplateApp {
                         );
                         all_shapes.extend(shapes);
                     }
+
+                    // interventions
+                    if self.ui_data.overlay_cities {
+                        let shapes = overlay::cities::get_intervention_shapes(
+                            transform,
+                            &self.dimensions,
+                            &self.almsivi_interventions,
+                        );
+                        all_shapes.extend(shapes);
+                    }
+
                     // travel
                     if self.ui_data.overlay_travel {
                         let shapes = overlay::travel::get_travel_shapes(

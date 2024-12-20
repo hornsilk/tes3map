@@ -5,6 +5,7 @@ use log::info;
 
 use crate::app::TooltipInfo;
 use crate::overlay::cities::get_cities_shapes;
+use crate::overlay::cities::get_intervention_shapes;
 use crate::overlay::conflicts::get_conflict_shapes;
 use crate::overlay::grid::get_grid_shapes;
 use crate::overlay::regions::get_region_shapes;
@@ -113,6 +114,10 @@ impl TemplateApp {
         }
         if self.ui_data.overlay_cities {
             let shapes = get_cities_shapes(to_screen, &self.dimensions, &self.cell_records);
+            painter.extend(shapes);
+        }
+        if self.ui_data.overlay_cities {
+            let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.almsivi_interventions);
             painter.extend(shapes);
         }
         if self.ui_data.overlay_travel {
