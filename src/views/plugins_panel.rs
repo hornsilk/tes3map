@@ -1,7 +1,7 @@
 use std::collections::hash_map::Entry;
 
 use log::{info, warn};
-use tes3::esp::{Cell, Landscape, LandscapeTexture, Npc, Plugin, Region};
+use tes3::esp::{Cell, Landscape, LandscapeTexture, Npc, Plugin, Region, Static};
 
 use crate::*;
 
@@ -239,6 +239,23 @@ impl TemplateApp {
                 for region in plugin.objects_of_type::<Region>() {
                     self.regn_records.insert(region.id.clone(), region.clone());
                 }
+
+                // add almsivi intervention
+                // almsivi = []
+                for mystatic in plugin.objects_of_type::<Static>() {
+                    if mystatic.id == "temples" {
+                        let foo = 2;
+                    }
+                    
+                }
+                // for cell in plugin.objects_of_type::<Cell>() {
+
+                //     for (static_id, _) in almsivis.clone() {
+                //         if cell.references.iter().any(|p| p.1.id == npc_id) {
+                //             npcs.insert(npc_id, key);
+                //         }
+                //     }
+                // }
             }
         }
 
