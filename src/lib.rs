@@ -484,6 +484,12 @@ pub fn height_from_screen_space(
     heights.get(i).copied()
 }
 
+fn get_center_from_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Pos2 {
+    let p00 = dimensions.tranform_to_canvas(key);
+    let p_center = Pos2::new(p00.x + 0.5, p00.y + 0.5);
+    to_screen * p_center
+}
+
 fn get_rect_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Rect {
     let p00 = dimensions.tranform_to_canvas(key);
     let p11 = Pos2::new(p00.x + 1.0, p00.y + 1.0);
