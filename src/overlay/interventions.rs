@@ -4,7 +4,7 @@ use eframe::epaint::Stroke;
 use egui::{emath::RectTransform, Color32, Shape};
 use tes3::esp::Cell;
 
-use crate::{dimensions::Dimensions, get_tri_at_cell, CellKey};
+use crate::{dimensions::Dimensions, get_center_from_cell, get_tri_at_cell, CellKey};
 use voronoice::*;
 use egui::Pos2;
 use std::cmp::max;
@@ -28,16 +28,24 @@ pub fn create_voronoi_polygons(
     dimensions: &Dimensions,
     interventions: &HashMap<CellKey, Cell>,
 ) -> Vec<Shape> {
-    let dx = dimensions.max_x - dimensions.min_x;
-    let dy = dimensions.max_y - dimensions.min_y;
-    let bounding_size = max(dx, dy) as f64 * 1.2;
+    // let dx = dimensions.max_x - dimensions.min_x;
+    let dx = (to_screen.to().max.x - to_screen.to().min.x) as i32;
+    // let dy = dimensions.max_y - dimensions.min_y;
+    let dy = (to_screen.to().max.y - to_screen.to().min.y) as i32;
+    // let bounding_size = max(dx, dy) as f64 * 1.2;
+    let bounding_size = 2000.0;
 
     let n_points = interventions.keys().len();
     let mut centers: Vec<Point> = Vec::with_capacity(n_points as usize);
     let mut shapes: Vec<Shape> = Vec::new();
 
     for key in interventions.keys() {
-        centers.push( Point{x: (key.0 as f64) , y: (key.1 as f64) });
+        let old_pt = Point{x: (key.0 as f64) , y: (key.1 as f64) };
+        let temp = get_center_from_cell(dimensions, to_screen, key.clone());
+        let new_pt = Point{x: (temp.x as f64) , y: (temp.y as f64) };
+
+        println!("({},{}) --> ({},{})", old_pt.x,old_pt.y, new_pt.x, new_pt.y);
+        centers.push( Point{x: (temp.x as f64) , y: (temp.y as f64) });
     }
     let my_voronoi = VoronoiBuilder::default()
         .set_sites(centers)
@@ -52,8 +60,8 @@ pub fn create_voronoi_polygons(
         let mut my_verticies: Vec<Pos2> = Vec::with_capacity(n_vertecies as usize);
     
         for vert in my_verts {
-            let my_vert = convert_from_voronoi(vert, dimensions);
-            my_verticies.push(to_screen*my_vert);
+            let my_vert = Pos2 {x: vert.x as f32, y:vert.y as f32};
+            my_verticies.push(my_vert);
         }
         let color = Color32::from_rgb(0, 255, 0);
         let color2 = Color32::from_rgb(0, 255, 0);
@@ -64,10 +72,10 @@ pub fn create_voronoi_polygons(
         shapes.push(my_polygon);
         
         
-        let my_new_center = convert_from_voronoi(my_cell.site_position(),dimensions);
-        
+        let my_new_center = Pos2 {x: my_cell.site_position().x as f32, y:my_cell.site_position().y as f32};
+
         let radius = 10.0;
-        let my_dot = Shape::circle_filled(to_screen*my_new_center, radius, color);
+        let my_dot = Shape::circle_filled(my_new_center, radius, color);
         shapes.push(my_dot);
     }
 
