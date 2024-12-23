@@ -254,7 +254,7 @@ impl TemplateApp {
                 }
                 
                 // add divine interventions
-                let divine_static_string = "TempleMarker";
+                let divine_static_string = "DivineMarker";
                 for cell in plugin.objects_of_type::<Cell>() {
                     if cell.references.iter().any(|p| p.1.id == divine_static_string) {
                         let coord = (cell.data.grid.0, cell.data.grid.1);
