@@ -23,6 +23,11 @@ use dimensions::Dimensions;
 
 use crate::app::TooltipInfo;
 
+use rand::Rng;
+use rand::rngs::StdRng;
+use rand::SeedableRng;
+use sha2::{Sha256, Digest};
+
 mod app;
 mod background;
 mod dimensions;
@@ -507,6 +512,29 @@ fn get_tri_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellK
 
     let triangle_vector = vec![to_screen * p_a, to_screen * p_b, to_screen * p_c];
     triangle_vector
+}
+
+fn string_to_seed(seed: &str) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(seed);
+    let hash = hasher.finalize();
+    
+    // Return the hash as a fixed-size array (32 bytes)
+    let mut seed_array = [0u8; 32];
+    seed_array.copy_from_slice(&hash);
+    seed_array
+}
+
+fn generate_random_color(seed: &str) -> (u8, u8, u8) {
+    let rng_seed = string_to_seed(seed);
+    let mut rng = StdRng::from_seed(rng_seed);
+
+    // Generate random RGB values
+    let r = rng.gen_range(0..=255);
+    let g = rng.gen_range(0..=255);
+    let b = rng.gen_range(0..=255);
+    
+    (r, g, b)
 }
 
 

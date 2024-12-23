@@ -8,35 +8,7 @@ use crate::{dimensions::Dimensions, get_center_from_cell, get_tri_at_cell, CellK
 use voronoice::*;
 use egui::Pos2;
 
-use rand::Rng;
-use rand::rngs::StdRng;
-use rand::SeedableRng;
-use sha2::{Sha256, Digest};
-
-fn string_to_seed(seed: &str) -> [u8; 32] {
-    let mut hasher = Sha256::new();
-    hasher.update(seed);
-    let hash = hasher.finalize();
-    
-    // Return the hash as a fixed-size array (32 bytes)
-    let mut seed_array = [0u8; 32];
-    seed_array.copy_from_slice(&hash);
-    seed_array
-}
-
-fn generate_random_color(seed: &str) -> (u8, u8, u8) {
-    let rng_seed = string_to_seed(seed);
-    let mut rng = StdRng::from_seed(rng_seed);
-
-    // Generate random RGB values
-    let r = rng.gen_range(0..=255);
-    let g = rng.gen_range(0..=255);
-    let b = rng.gen_range(0..=255);
-    
-    (r, g, b)
-}
-
-
+use crate::generate_random_color;
 
 
 pub fn create_voronoi_polygons(
@@ -54,10 +26,10 @@ pub fn create_voronoi_polygons(
     let mut centers: Vec<Point> = Vec::with_capacity(n as usize);
     let mut shapes: Vec<Shape> = Vec::new();
     let mut colors: Vec<Color32> = Vec::with_capacity(n as usize);
-    
+
     for key in interventions.keys() {
-        let temp = get_center_from_cell(dimensions, to_screen, key.clone());
-        centers.push( Point{x: (temp.x as f64) , y: (temp.y as f64) });
+        let center_pos2 = get_center_from_cell(dimensions, to_screen, key.clone());
+        centers.push( Point{x: (center_pos2.x as f64) , y: (center_pos2.y as f64) });
 
         let mut color = Color32::from_gray(0);
         if let Some(region_name) = &interventions[key].region {
@@ -87,7 +59,7 @@ pub fn create_voronoi_polygons(
         let mut verts_pos2: Vec<Pos2> = Vec::with_capacity(n_vertecies as usize);
     
         for vert in verts {
-            verts_pos2.push(Pos2 {x: vert.x as f32, y:vert.y as f32});
+            verts_pos2.push(Pos2::new(vert.x as f32, vert.y as f32));
         }
 
 
@@ -96,7 +68,7 @@ pub fn create_voronoi_polygons(
         shapes.push(polygon);
         
         
-        // let my_new_center = Pos2 {x: my_cell.site_position().x as f32, y:my_cell.site_position().y as f32};
+        // let my_new_center = Pos2::new(my_cell.site_position().x as f32, my_cell.site_position().y as f32);
         // let radius = 10.0;
         // let my_dot = Shape::circle_filled(my_new_center, radius, color);
         // shapes.push(my_dot);
