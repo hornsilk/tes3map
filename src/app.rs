@@ -416,6 +416,7 @@ impl TemplateApp {
                             transform,
                             &self.dimensions,
                             &self.almsivi_interventions,
+                            "almsivi",
                         );
                         all_shapes.extend(shapes);
                     }
@@ -424,6 +425,7 @@ impl TemplateApp {
                             transform,
                             &self.dimensions,
                             &self.divine_interventions,
+                            "divine",
                         );
                         all_shapes.extend(shapes);
                     }

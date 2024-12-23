@@ -4,7 +4,7 @@ use eframe::epaint::Stroke;
 use egui::{emath::RectTransform, Color32, Shape};
 use tes3::esp::Cell;
 
-use crate::{dimensions::Dimensions, get_center_from_cell, get_tri_at_cell, CellKey};
+use crate::{dimensions::Dimensions, get_center_from_cell, get_long_tri_at_cell, get_nonagon_at_cell, CellKey};
 use voronoice::*;
 use egui::Pos2;
 
@@ -83,18 +83,34 @@ pub fn get_intervention_shapes(
     to_screen: RectTransform,
     dimensions: &Dimensions,
     interventions: &HashMap<CellKey, Cell>,
+    icon_type: &str,
 ) -> Vec<Shape> {
-    let color = Color32::from_rgb(180, 25, 25);
-    let color2 = Color32::from_rgb(180, 25, 25);
-    let color2 = color2.gamma_multiply(0.0);
-
+    let mut color = Color32::from_rgb(0, 0, 0);
+    let mut fill_color = Color32::from_rgb(0, 0, 0);
+    fill_color = fill_color.gamma_multiply(0.0);
+    
     // let shapes_len =
     //     (dimensions.max_x - dimensions.min_x + 1) * (dimensions.max_y - dimensions.min_y + 1);
     let mut shapes: Vec<Shape> = Vec::new();
     
     for key in interventions.keys() {
-        let tri = get_tri_at_cell(dimensions, to_screen, key.clone());
-        let shape = Shape::convex_polygon(tri, color2, Stroke::new(3.0, color));
+        let radius = 3.0;
+        let center = get_center_from_cell(dimensions, to_screen, key.clone());
+        let mut shape = Shape::circle_filled(center, radius, color);
+
+        if icon_type == "almsivi" {
+            color = Color32::from_rgb(180, 25, 25);
+            let tri = get_long_tri_at_cell(dimensions, to_screen, key.clone());
+            shape = Shape::convex_polygon(tri, fill_color, Stroke::new(3.0, color));
+        }
+        else if icon_type == "divine" {
+            color = Color32::from_gray(200);
+            let width = 2.0;
+            
+            let nonagon = get_nonagon_at_cell(dimensions, to_screen, key.clone());
+            shape = Shape::convex_polygon(nonagon, fill_color, Stroke::new(width, color));
+        }
+
         shapes.push(shape);
     }
 

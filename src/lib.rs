@@ -27,6 +27,7 @@ use rand::Rng;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use sha2::{Sha256, Digest};
+use std::f32::consts::PI;
 
 mod app;
 mod background;
@@ -502,7 +503,7 @@ fn get_rect_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: Cell
     Rect::from_two_pos(to_screen * p00, to_screen * p11)
 }
 
-fn get_tri_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Vec<Pos2> {
+fn get_long_tri_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Vec<Pos2> {
     let p00 = dimensions.tranform_to_canvas(key);
 
     let scale = 0.5;
@@ -512,6 +513,22 @@ fn get_tri_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellK
 
     let triangle_vector = vec![to_screen * p_a, to_screen * p_b, to_screen * p_c];
     triangle_vector
+}
+
+fn get_nonagon_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Vec<Pos2> {
+    let p00 = dimensions.tranform_to_canvas(key);
+    let p_center = Pos2::new(p00.x + 0.5, p00.y + 0.5);
+    let scale = 0.3;
+    let direction = 0.25;
+    
+    let mut nonagon_vector: Vec<Pos2> = Vec::with_capacity(9 as usize);
+    for i in 0..9 {
+        let angle = (direction + (i as f32) * 2.0 / 9.0) * PI * 2.0 ;
+        let p = Pos2::new(p_center.x + scale * angle.cos(), p_center.y + scale * angle.sin());
+        nonagon_vector.push(to_screen * p);
+    }
+
+    nonagon_vector
 }
 
 fn string_to_seed(seed: &str) -> [u8; 32] {
