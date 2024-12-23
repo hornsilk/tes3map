@@ -65,7 +65,8 @@ impl TemplateApp {
         ui.checkbox(&mut self.ui_data.overlay_region, "Show regions");
         ui.checkbox(&mut self.ui_data.overlay_grid, "Show cell grid");
         ui.checkbox(&mut self.ui_data.overlay_cities, "Show cities");
-        ui.checkbox(&mut self.ui_data.overlay_interventions, "Show interventions");
+        ui.checkbox(&mut self.ui_data.overlay_alm_interventions, "Show almsivi intervention");
+        ui.checkbox(&mut self.ui_data.overlay_div_interventions, "Show divine intervention");
         ui.checkbox(&mut self.ui_data.overlay_travel, "Show travel");
         ui.checkbox(&mut self.ui_data.overlay_conflicts, "Show conflicts");
 

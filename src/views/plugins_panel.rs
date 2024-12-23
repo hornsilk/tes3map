@@ -135,6 +135,7 @@ impl TemplateApp {
         self.travel_edges.clear();
         self.cell_records.clear();
         self.almsivi_interventions.clear();
+        self.divine_interventions.clear();
         self.cell_conflicts.clear();
 
         // load plugins into memory
@@ -146,6 +147,7 @@ impl TemplateApp {
         let mut travels: HashMap<String, (Vec<CellKey>, String)> = HashMap::default();
         let mut npcs: HashMap<String, CellKey> = HashMap::default();
         let mut almsivi_interventions: HashMap<CellKey, Cell> = HashMap::default();
+        let mut divine_interventions: HashMap<CellKey, Cell> = HashMap::default();
 
         let enabled_plugins: Vec<&PluginViewModel> = self
             .plugins
@@ -250,6 +252,15 @@ impl TemplateApp {
                         almsivi_interventions.insert(coord, cell.clone());
                     }                    
                 }
+                
+                // add divine interventions
+                let divine_static_string = "TempleMarker";
+                for cell in plugin.objects_of_type::<Cell>() {
+                    if cell.references.iter().any(|p| p.1.id == divine_static_string) {
+                        let coord = (cell.data.grid.0, cell.data.grid.1);
+                       divine_interventions.insert(coord, cell.clone());
+                    }                    
+                }
             }
         }
         
@@ -284,6 +295,7 @@ impl TemplateApp {
         self.land_records = land_records;
         self.cell_records = cells;
         self.almsivi_interventions = almsivi_interventions;
+        self.divine_interventions = divine_interventions;
         // self.land_ids = land_id_map;
     }
 }

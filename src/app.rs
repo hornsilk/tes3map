@@ -58,6 +58,8 @@ pub struct TemplateApp {
     // intervention spells
     #[serde(skip)]
     pub almsivi_interventions: HashMap<CellKey, Cell>,
+    #[serde(skip)]
+    pub divine_interventions: HashMap<CellKey, Cell>,
     
     // overlays
     #[serde(skip)]
@@ -362,7 +364,8 @@ impl TemplateApp {
                 let any_overlay = self.ui_data.overlay_region
                     || self.ui_data.overlay_grid
                     || self.ui_data.overlay_cities
-                    || self.ui_data.overlay_interventions
+                    || self.ui_data.overlay_alm_interventions
+                    || self.ui_data.overlay_div_interventions
                     || self.ui_data.overlay_travel
                     || self.ui_data.overlay_conflicts;
 
@@ -408,11 +411,20 @@ impl TemplateApp {
                     }
 
                     // interventions
-                    if self.ui_data.overlay_interventions {
+                    if self.ui_data.overlay_alm_interventions {
                         let shapes = overlay::interventions::get_intervention_shapes(
                             transform,
                             &self.dimensions,
                             &self.almsivi_interventions,
+                            &self.regn_records,
+                        );
+                        all_shapes.extend(shapes);
+                    }
+                    if self.ui_data.overlay_div_interventions {
+                        let shapes = overlay::interventions::get_intervention_shapes(
+                            transform,
+                            &self.dimensions,
+                            &self.divine_interventions,
                             &self.regn_records,
                         );
                         all_shapes.extend(shapes);
