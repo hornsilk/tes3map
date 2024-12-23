@@ -117,7 +117,7 @@ impl TemplateApp {
             painter.extend(shapes);
         }
         if self.ui_data.overlay_interventions {
-            let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.almsivi_interventions);
+            let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.almsivi_interventions, &self.regn_records);
             painter.extend(shapes);
         }
         if self.ui_data.overlay_travel {
