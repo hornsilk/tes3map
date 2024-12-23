@@ -33,8 +33,8 @@ pub fn create_voronoi_polygons(
 
         let mut color = Color32::from_gray(0);
         if let Some(region_name) = &interventions[key].region {
-            // generate a random string hashed by "region_name_x_y"
-            let color_from_hash = generate_random_color(&format!("{}_{}_{}",region_name,key.0,key.1));
+            // generate a random string hashed by "region_name_(x,y)"
+            let color_from_hash = generate_random_color(&format!("{}_({},{})",region_name,key.0,key.1));
             color = Color32::from_rgb(
                 color_from_hash.0,
                 color_from_hash.1,
