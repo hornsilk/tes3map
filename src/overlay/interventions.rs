@@ -4,11 +4,74 @@ use eframe::epaint::Stroke;
 use egui::{emath::RectTransform, Color32, Shape};
 use tes3::esp::Cell;
 
-use crate::{dimensions::Dimensions, get_center_from_cell, get_long_tri_at_cell, get_nonagon_at_cell, CellKey};
+use crate::{dimensions::Dimensions, get_center_from_cell, get_long_tri_at_cell, get_nonagon_at_cell, get_rect_at_cell, CellKey};
 use voronoice::*;
-use egui::Pos2;
+use egui::{Pos2, Rounding};
+
+use std::cmp::max;
 
 use crate::generate_random_color;
+
+
+pub fn create_kingsstep_polygons(
+    to_screen: RectTransform,
+    dimensions: &Dimensions,
+    interventions: &HashMap<CellKey, Cell>,
+) -> Vec<Shape> {
+    let n = interventions.keys().len();
+    let mut centers: Vec<(i32,i32)> = Vec::with_capacity(n as usize);
+    let mut colors: Vec<Color32> = Vec::with_capacity(n as usize);
+
+    let mut shapes: Vec<Shape> = Vec::new();
+    if n < 1 {
+        return shapes
+    }
+
+    for key in interventions.keys() {
+        centers.push(key.clone());
+
+        let mut color = Color32::from_gray(128);
+        if let Some(region_name) = &interventions[key].region {
+            // generate a random string hashed by "region_name_(x,y)"
+            let color_from_hash = generate_random_color(&format!("{}_({},{})",region_name,key.0,key.1));
+            color = Color32::from_rgb(
+                color_from_hash.0,
+                color_from_hash.1,
+                color_from_hash.2,
+            );
+        }
+        colors.push(color);
+    }
+
+    for x in dimensions.min_x..dimensions.max_x+1 {
+        for y in dimensions.min_y..dimensions.max_y+1{
+            let mut dist_map: HashMap<i32, i32> = HashMap::with_capacity(n as usize);
+            for (i, (cx, cy)) in centers.clone().into_iter().enumerate() {
+                let dx = (cx - x).abs();
+                let dy = (cy - y).abs();
+                let kings_dist = max(dx, dy);
+
+                dist_map.insert(i as i32, kings_dist);
+            }
+                        
+            let mut min_idx = 0;
+            let mut min_val = dist_map[&min_idx];
+            for i in 1..(n as i32) {
+                if dist_map[&i] < min_val {
+                    min_idx = i;
+                    min_val = dist_map[&min_idx];
+                }
+            }
+            let color = colors[min_idx as usize].gamma_multiply(0.1);
+
+            let rect = get_rect_at_cell(dimensions, to_screen, (x,y));
+            let shape = Shape::rect_filled(rect, Rounding::default(), color);
+            shapes.push(shape);
+        }
+    }
+
+    shapes
+}
 
 
 pub fn create_voronoi_polygons(
@@ -89,8 +152,6 @@ pub fn get_intervention_shapes(
     let mut fill_color = Color32::from_rgb(0, 0, 0);
     fill_color = fill_color.gamma_multiply(0.0);
     
-    // let shapes_len =
-    //     (dimensions.max_x - dimensions.min_x + 1) * (dimensions.max_y - dimensions.min_y + 1);
     let mut shapes: Vec<Shape> = Vec::new();
     
     for key in interventions.keys() {
@@ -114,8 +175,14 @@ pub fn get_intervention_shapes(
         shapes.push(shape);
     }
 
-    let voronoi_cells = create_voronoi_polygons(to_screen, dimensions, interventions);
-    shapes.extend(voronoi_cells);
+    let engine_type = "vanilla";    
+    if engine_type == "openmw" {
+        let voronoi_cells = create_voronoi_polygons(to_screen, dimensions, interventions);
+        shapes.extend(voronoi_cells);
+    } else {
+        let kings_step_cells = create_kingsstep_polygons(to_screen, dimensions, interventions);
+        shapes.extend(kings_step_cells);
+    }
 
     shapes
 }
