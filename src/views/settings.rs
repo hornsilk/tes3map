@@ -52,6 +52,25 @@ impl TemplateApp {
                     self.reload_background(ctx, None, false, false);
                 }
             });
+        
+
+        ui.label("Intervention Engine");
+        let vanilla_str = "Vanilla";
+        let openmw_str = "openmw";
+        egui::ComboBox::from_id_source("intervention engine")
+            .selected_text(format!("{:?}", self.intervention_engine))
+            .show_ui(ui, |ui| {
+                ui.selectable_value(
+                    &mut self.intervention_engine,
+                    vanilla_str.to_string(), 
+                    vanilla_str
+                );
+                ui.selectable_value(
+                    &mut self.intervention_engine,
+                    openmw_str.to_string(), 
+                    openmw_str
+                );
+            });
 
         ui.separator();
 

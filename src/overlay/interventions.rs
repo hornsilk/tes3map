@@ -147,6 +147,7 @@ pub fn get_intervention_shapes(
     dimensions: &Dimensions,
     interventions: &HashMap<CellKey, Cell>,
     icon_type: &str,
+    intervention_engine: &str,
 ) -> Vec<Shape> {
     let mut color = Color32::from_rgb(0, 0, 0);
     let mut fill_color = Color32::from_rgb(0, 0, 0);
@@ -175,8 +176,8 @@ pub fn get_intervention_shapes(
         shapes.push(shape);
     }
 
-    let engine_type = "vanilla";    
-    if engine_type == "openmw" {
+    // let engine_type = "vanilla";    
+    if intervention_engine == "openmw" {
         let voronoi_cells = create_voronoi_polygons(to_screen, dimensions, interventions);
         shapes.extend(voronoi_cells);
     } else {

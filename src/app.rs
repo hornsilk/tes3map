@@ -60,6 +60,8 @@ pub struct TemplateApp {
     pub almsivi_interventions: HashMap<CellKey, Cell>,
     #[serde(skip)]
     pub divine_interventions: HashMap<CellKey, Cell>,
+
+    pub intervention_engine: String,
     
     // overlays
     #[serde(skip)]
@@ -417,6 +419,7 @@ impl TemplateApp {
                             &self.dimensions,
                             &self.almsivi_interventions,
                             "almsivi",
+                            &self.intervention_engine,
                         );
                         all_shapes.extend(shapes);
                     }
@@ -426,6 +429,7 @@ impl TemplateApp {
                             &self.dimensions,
                             &self.divine_interventions,
                             "divine",
+                            &self.intervention_engine,
                         );
                         all_shapes.extend(shapes);
                     }

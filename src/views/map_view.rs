@@ -117,11 +117,11 @@ impl TemplateApp {
             painter.extend(shapes);
         }
         if self.ui_data.overlay_alm_interventions {
-            let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.almsivi_interventions, "almsivi");
+            let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.almsivi_interventions, "almsivi", &self.intervention_engine);
             painter.extend(shapes);
         }
         if self.ui_data.overlay_div_interventions {
-            let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.divine_interventions, "divine");
+            let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.divine_interventions, "divine", &self.intervention_engine);
             painter.extend(shapes);
         }
         if self.ui_data.overlay_travel {
