@@ -32,8 +32,8 @@ pub fn create_kingsstep_polygons(
 
         let mut color = Color32::from_gray(128);
         if let Some(region_name) = &interventions[key].region {
-            // generate a random string hashed by "region_name_(x,y)"
-            let color_from_hash = generate_random_color(&format!("{}_({},{})",region_name,key.0,key.1));
+            // generate a random string hashed by "(x,y)_region_name"
+            let color_from_hash = generate_random_color(&format!("({},{})_{}",key.0,key.1,region_name));
             color = Color32::from_rgb(
                 color_from_hash.0,
                 color_from_hash.1,
@@ -62,7 +62,7 @@ pub fn create_kingsstep_polygons(
                     min_val = dist_map[&min_idx];
                 }
             }
-            let color = colors[min_idx as usize].gamma_multiply(0.1);
+            let color = colors[min_idx as usize].gamma_multiply(0.2);
 
             let rect = get_rect_at_cell(dimensions, to_screen, (x,y));
             let shape = Shape::rect_filled(rect, Rounding::default(), color);
@@ -105,7 +105,7 @@ pub fn create_voronoi_polygons(
             );
         }
 
-        color = color.gamma_multiply(0.1);
+        color = color.gamma_multiply(0.2);
         colors.push(color);
     }
 
