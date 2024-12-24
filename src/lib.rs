@@ -50,6 +50,7 @@ pub enum EBackground {
     HeightMap,
     #[default]
     GameMap,
+    PTMap,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]

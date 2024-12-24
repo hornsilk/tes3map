@@ -6,7 +6,7 @@ use log::{debug, error};
 use tes3::esp::{Landscape, Region};
 
 use background::{
-    gamemap::generate_map, heightmap::generate_heightmap, landscape::compute_landscape_image,
+    gamemap::generate_map, heightmap::generate_heightmap, landscape::compute_landscape_image, ptmap::generate_ptmap,
 };
 use overlay::{paths::get_overlay_path_image, regions::get_region_shapes};
 
@@ -242,6 +242,7 @@ impl TemplateApp {
             }
             EBackground::HeightMap => Some(self.get_heightmap_image()),
             EBackground::GameMap => Some(self.get_gamemap_image()),
+            EBackground::PTMap => Some(self.get_ptmap_image()),
         };
 
         if let Some(image) = image {
@@ -264,6 +265,10 @@ impl TemplateApp {
 
     pub fn get_gamemap_image(&mut self) -> ColorImage {
         generate_map(&self.dimensions, &self.land_records)
+    }
+
+    pub fn get_ptmap_image(&mut self) -> ColorImage {
+        generate_ptmap(&self.dimensions, &self.land_records)
     }
 
     pub fn get_landscape_image(&mut self) -> ColorImage {
@@ -295,6 +300,7 @@ impl TemplateApp {
             EBackground::Landscape => "l",
             EBackground::HeightMap => "h",
             EBackground::GameMap => "g",
+            EBackground::PTMap => "p",
         };
         let first_plugin = self
             .plugins
@@ -326,6 +332,9 @@ impl TemplateApp {
                 }
                 EBackground::GameMap => {
                     background = Some(self.get_gamemap_image());
+                }
+                EBackground::PTMap => {
+                    background = Some(self.get_ptmap_image());
                 }
             }
 

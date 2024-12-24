@@ -47,6 +47,16 @@ impl TemplateApp {
                 {
                     clicked = true;
                 }
+                if ui
+                .selectable_value(
+                    &mut self.ui_data.background,
+                    EBackground::PTMap,
+                    "Project Tamriel map",
+                )
+                .clicked()
+                {
+                    clicked = true;
+                }
 
                 if clicked && self.background_handle.is_some() {
                     self.reload_background(ctx, None, false, false);
