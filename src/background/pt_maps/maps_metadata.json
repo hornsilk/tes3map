@@ -1,0 +1,22 @@
+{
+    "maps": [
+        {
+            "name": "Morrowind",
+            "grid_pxls": 40,
+            "min_x": -42,
+            "max_x": 62,
+            "min_y": -64,
+            "max_y": 41,
+            "file": "tr_map"    
+        },
+        {
+            "name": "TR",
+            "grid_pxls": 40,
+            "min_x": -42,
+            "max_x": 62,
+            "min_y": -64,
+            "max_y": 41,
+            "file": "tr_map"
+        }
+    ]
+}

@@ -268,7 +268,7 @@ impl TemplateApp {
     }
 
     pub fn get_ptmap_image(&mut self) -> ColorImage {
-        generate_ptmap(&self.dimensions, &self.land_records)
+        generate_ptmap(&self.dimensions)
     }
 
     pub fn get_landscape_image(&mut self) -> ColorImage {

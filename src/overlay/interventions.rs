@@ -32,8 +32,8 @@ pub fn create_kingsstep_polygons(
 
         let mut color = Color32::from_gray(128);
         if let Some(region_name) = &interventions[key].region {
-            // generate a random string hashed by "(x,y)_region_name"
-            let color_from_hash = generate_random_color(&format!("({},{})_{}",key.0,key.1,region_name));
+            // generate a random string hashed by "region_name_(x,y)"
+            let color_from_hash = generate_random_color(&format!("{}_({},{})",region_name,key.0,key.1));
             color = Color32::from_rgb(
                 color_from_hash.0,
                 color_from_hash.1,
