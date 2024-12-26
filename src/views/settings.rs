@@ -65,8 +65,8 @@ impl TemplateApp {
         
 
         ui.label("Intervention Engine");
-        let vanilla_str = "Vanilla";
-        let openmw_str = "openmw";
+        let vanilla_str = "By Cell";
+        let openmw_str = "Pythagorean";
         egui::ComboBox::from_id_source("intervention engine")
             .selected_text(format!("{:?}", self.intervention_engine))
             .show_ui(ui, |ui| {

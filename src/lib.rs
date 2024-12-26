@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use egui::{emath::RectTransform, Color32, ColorImage, Pos2, Rect};
+use egui::{emath::RectTransform, Color32, ColorImage, Pos2, Rect, Vec2};
 use image::{
     error::{ImageFormatHint, UnsupportedError, UnsupportedErrorKind},
     DynamicImage, ImageError, RgbaImage,
@@ -530,6 +530,39 @@ fn get_nonagon_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: C
     }
 
     nonagon_vector
+}
+
+fn break_ties_todd_howard_spiral(
+    location: (i32, i32),
+    node_a: (i32, i32),
+    node_b: (i32, i32),
+) -> bool {
+    // node_a and node_b are intervention locations
+    // returns true if node_b is "closer" to location than node_a based on vanilla game engine logic
+    // https://gitlab.com/OpenMW/openmw/-/merge_requests/4401
+
+    // my method: find the angle from location to node_i
+    // starting at -135 degrees (-90 - 45 degrees, SW corner) and rotating clockwise, (same as 225 degrees)
+    //                      todd breaks ties based on which angle you hit first
+    let theta_offset = -135.0 * PI / 180.0;
+
+
+    let v_a: Vec2 = Vec2::new((node_a.0 - location.0) as f32, (node_a.1 - location.1) as f32);
+    let v_b: Vec2 = Vec2::new((node_b.0 - location.0) as f32, (node_b.1 - location.1) as f32);
+    let mut theta_a = v_a.angle();
+    let mut theta_b = v_b.angle();
+
+    // assert!(theta_a >= -PI);
+    // assert!(theta_b >= -PI);
+    // assert!(theta_a <= PI);
+    // assert!(theta_b <= PI);
+
+    theta_a = theta_a - theta_offset;
+    theta_b = theta_b - theta_offset;
+    if theta_a < 0.0 { theta_a = theta_a + 2.0*PI;}
+    if theta_b < 0.0 { theta_b = theta_b + 2.0*PI;}
+
+    theta_b < theta_a
 }
 
 fn string_to_seed(seed: &str) -> [u8; 32] {
