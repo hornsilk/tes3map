@@ -6,7 +6,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use egui::{emath::RectTransform, Color32, ColorImage, Pos2, Rect, Vec2};
+use egui::{emath::RectTransform, Color32, ColorImage, Pos2, Rect, Vec2, Shape};
+use egui::epaint::PathStroke;
+
 use image::{
     error::{ImageFormatHint, UnsupportedError, UnsupportedErrorKind},
     DynamicImage, ImageError, RgbaImage,
@@ -586,6 +588,24 @@ fn generate_random_color(seed: &str) -> (u8, u8, u8) {
     let b = rng.gen_range(0..=255);
     
     (r, g, b)
+}
+
+fn rect_to_edges(rect: Rect) -> Vec<Shape> {
+    let color = Color32::from_gray(0);
+    let width = 1.0;
+
+    let lt = rect.left_top();
+    let rt = rect.right_top();
+    let lb = rect.left_bottom();
+    let rb = rect.right_bottom();
+    
+    let mut edge_vec: Vec<Shape> = Vec::with_capacity(4);
+    edge_vec.push(Shape::LineSegment{ points: [lt,rt], stroke: PathStroke::new(width, color) });
+    edge_vec.push(Shape::LineSegment{ points: [lb,rb], stroke: PathStroke::new(width, color) });
+    edge_vec.push(Shape::LineSegment{ points: [lt,lb], stroke: PathStroke::new(width, color) });
+    edge_vec.push(Shape::LineSegment{ points: [rt,rb], stroke: PathStroke::new(width, color) });
+
+    edge_vec
 }
 
 

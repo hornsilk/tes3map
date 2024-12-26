@@ -7,7 +7,7 @@ use tes3::esp::Cell;
 use crate::{
     dimensions::Dimensions, CellKey,
     get_center_from_cell, get_long_tri_at_cell, get_nonagon_at_cell, get_rect_at_cell, 
-    break_ties_todd_howard_spiral
+    break_ties_todd_howard_spiral, rect_to_edges
 };
 use voronoice::*;
 use egui::{Pos2, Rounding};
@@ -25,6 +25,7 @@ pub fn create_kingsstep_polygons(
     let n = interventions.keys().len();
     let mut centers: Vec<(i32,i32)> = Vec::with_capacity(n as usize);
     let mut colors: Vec<Color32> = Vec::with_capacity(n as usize);
+    let mut edge_lists: Vec<Vec<Shape>> = Vec::with_capacity(n as usize);
 
     let mut shapes: Vec<Shape> = Vec::new();
     if n < 1 {
@@ -45,6 +46,7 @@ pub fn create_kingsstep_polygons(
             );
         }
         colors.push(color);
+        edge_lists.push(Vec::new());
     }
 
     for x in dimensions.min_x..dimensions.max_x+1 {
@@ -80,7 +82,27 @@ pub fn create_kingsstep_polygons(
             let rect = get_rect_at_cell(dimensions, to_screen, (x,y));
             let shape = Shape::rect_filled(rect, Rounding::default(), color);
             shapes.push(shape);
+
+            let edges = rect_to_edges(rect);
+            edge_lists[min_idx as usize].extend(edges);
         }
+    }
+
+    for edge_list in edge_lists {
+        let mut unique_edges: Vec<Shape> = Vec::new();
+        // println!("New Edge List");
+        for edge in edge_list {
+            if unique_edges.contains(&edge) {
+                let index = unique_edges.iter().position(|r| *r == edge).unwrap();
+                let _ = unique_edges.swap_remove(index);
+                // println!("    remove to {}", unique_edges.len());
+            }
+            else {
+                unique_edges.push(edge);
+                // println!("    add to {}", unique_edges.len());
+            }
+        }
+        shapes.extend(unique_edges);
     }
 
     shapes
