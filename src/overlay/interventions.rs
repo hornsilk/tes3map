@@ -35,16 +35,14 @@ pub fn create_kingsstep_polygons(
     for key in interventions.keys() {
         centers.push(key.clone());
 
-        let mut color = Color32::from_gray(128);
-        if let Some(region_name) = &interventions[key].region {
-            // generate a random string hashed by "region_name_(x,y)"
-            let color_from_hash = generate_random_color(&format!("{}_({},{})",region_name,key.0,key.1));
-            color = Color32::from_rgb(
-                color_from_hash.0,
-                color_from_hash.1,
-                color_from_hash.2,
-            );
-        }
+        let cell_name = &interventions[key].name; 
+        // generate a random string hashed by "cell_name_(x,y)"
+        let color_from_hash = generate_random_color(&format!("{}_({},{})",cell_name,key.0,key.1));
+        let color = Color32::from_rgb(
+            color_from_hash.0,
+            color_from_hash.1,
+            color_from_hash.2,
+        );
         colors.push(color);
         edge_lists.push(Vec::new());
     }
