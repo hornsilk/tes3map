@@ -8,6 +8,7 @@ static GRID: usize = 9;
 
 use serde::Deserialize;
 use image::{ImageError, Rgba};
+use crate::PluginViewModel;
 
 
 static PNG_FILES: &[(&str, &[u8])] = &[
@@ -50,6 +51,7 @@ pub fn load_image_as_color_image(data: &[u8]) -> Result<ColorImage, ImageError> 
 
 pub fn generate_ptmap(
     dimensions: &Dimensions,
+    plugins: &Option<Vec<PluginViewModel>>, 
 ) -> ColorImage {
     
     // calculate map size
@@ -75,9 +77,21 @@ pub fn generate_ptmap(
 
     // Load the image from the embedded bytes
 
-    let map_type = "Morrowind";
     let mut image_data: ColorImage = ColorImage::new([height, width],Color32::from_gray(0));
 
+    let first_plugin = plugins
+        .as_ref()
+        .unwrap()
+        .iter()
+        .filter(|p| p.enabled)
+        .nth(0)
+        .unwrap();
+    
+    let temp = first_plugin.get_name();
+    let first_plugin_name = temp.split_once(".").expect("Invalid first plugin").0;
+    // let map_type = "Morrowind";
+    let map_type = first_plugin_name;
+    
     for map_metadata in maps_metadata.maps {
         if map_metadata.name == map_type {
             
@@ -104,47 +118,5 @@ pub fn generate_ptmap(
         }
     }
 
-
-    
-
-
-    // Print the parsed data
-    // for map in data.maps {
-    //     println!("Map Name: {}", map.name);
-    //     println!("Grid Pixels: {}", map.grid_pxls);
-    //     println!("X Range: {} to {}", map.x_min, map.x_max);
-    //     println!("Y Range: {} to {}", map.y_min, map.y_max);
-    //     println!("File: {}", map.file);
-    //     println!("---");
-    // }
-
-
-    // for grid_y in 0..height {
-    //     for grid_x in (0..width).rev() {
-    //         // we can divide by grid to get the cell and subtract the bounds to get the cell coordinates
-    //         let x = (grid_x / GRID) as i32 + dimensions.min_x;
-    //         let y = (grid_y / GRID) as i32 + dimensions.min_y;
-
-    //         // get LAND record
-    //         let key = (x, y);
-    //         if let Some(land) = landscape_records.get(&key) {
-    //             // get remainder
-    //             let hx = grid_x % GRID;
-    //             let hy = grid_y % GRID;
-
-    //             let heightmap = land.world_map_data.data.clone().to_vec();
-    //             pixels.push(get_map_color(heightmap[hy][hx] as f32));
-    //         } else {
-    //             pixels.push(Color32::TRANSPARENT);
-    //         }
-    //     }
-    // }
-
-    // pixels.reverse();
-
-    // ColorImage {
-    //     pixels,
-    //     size: [width, height],
-    // }
     image_data
 }

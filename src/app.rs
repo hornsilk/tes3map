@@ -268,7 +268,7 @@ impl TemplateApp {
     }
 
     pub fn get_ptmap_image(&mut self) -> ColorImage {
-        generate_ptmap(&self.dimensions)
+        generate_ptmap(&self.dimensions, &self.plugins)
     }
 
     pub fn get_landscape_image(&mut self) -> ColorImage {
@@ -395,7 +395,7 @@ impl TemplateApp {
 
                     let mut all_shapes = vec![];
 
-                    // order is: paths, regions, grid, cities, interventions, travel, conflicts
+                    // order is: paths, regions, grid, interventions, cities, travel, conflicts
                     // regions
                     if self.ui_data.overlay_region {
                         let shapes = get_region_shapes(
@@ -411,16 +411,7 @@ impl TemplateApp {
                         let shapes = overlay::grid::get_grid_shapes(transform, &self.dimensions);
                         all_shapes.extend(shapes);
                     }
-                    // cities
-                    if self.ui_data.overlay_cities {
-                        let shapes = overlay::cities::get_cities_shapes(
-                            transform,
-                            &self.dimensions,
-                            &self.cell_records,
-                        );
-                        all_shapes.extend(shapes);
-                    }
-
+                    
                     // interventions
                     if self.ui_data.overlay_alm_interventions {
                         let shapes = overlay::interventions::get_intervention_shapes(
@@ -439,6 +430,16 @@ impl TemplateApp {
                             &self.divine_interventions,
                             "divine",
                             &self.intervention_engine,
+                        );
+                        all_shapes.extend(shapes);
+                    }
+                    
+                    // cities
+                    if self.ui_data.overlay_cities {
+                        let shapes = overlay::cities::get_cities_shapes(
+                            transform,
+                            &self.dimensions,
+                            &self.cell_records,
                         );
                         all_shapes.extend(shapes);
                     }
