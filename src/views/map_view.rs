@@ -112,16 +112,16 @@ impl TemplateApp {
             let shapes = get_grid_shapes(to_screen, &self.dimensions);
             painter.extend(shapes);
         }
-        if self.ui_data.overlay_cities {
-            let shapes = get_cities_shapes(to_screen, &self.dimensions, &self.cell_records);
-            painter.extend(shapes);
-        }
         if self.ui_data.overlay_alm_interventions {
             let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.almsivi_interventions, "almsivi", &self.intervention_engine);
             painter.extend(shapes);
         }
         if self.ui_data.overlay_div_interventions {
             let shapes = get_intervention_shapes(to_screen, &self.dimensions, &self.divine_interventions, "divine", &self.intervention_engine);
+            painter.extend(shapes);
+        }
+        if self.ui_data.overlay_cities {
+            let shapes = get_cities_shapes(to_screen, &self.dimensions, &self.cell_records);
             painter.extend(shapes);
         }
         if self.ui_data.overlay_travel {

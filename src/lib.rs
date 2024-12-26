@@ -509,7 +509,7 @@ fn get_rect_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: Cell
 fn get_long_tri_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Vec<Pos2> {
     let p00 = dimensions.tranform_to_canvas(key);
 
-    let scale = 0.5;
+    let scale = 0.7;
     let p_a =  Pos2::new(p00.x - 0.5 * scale + 0.55, p00.y - 0.5 * scale + 0.5); //scale = 1: (0.05, 0) - top left
     let p_b =  Pos2::new(p00.x + 0.5, p00.y + 0.5 * scale + 0.45);               //scale = 1:  (0.5, 0.95) - bottom center
     let p_c =  Pos2::new(p00.x + 0.5 * scale + 0.45, p00.y - 0.5 * scale + 0.5); //scale = 1: (0.95, 0) - top right
@@ -526,7 +526,7 @@ fn get_nonagon_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: C
     
     let mut nonagon_vector: Vec<Pos2> = Vec::with_capacity(9 as usize);
     for i in 0..9 {
-        let angle = (direction + (i as f32) * 2.0 / 9.0) * PI * 2.0 ;
+        let angle = (direction + (i as f32) * 2.0 / 9.0) * PI;
         let p = Pos2::new(p_center.x + scale * angle.cos(), p_center.y + scale * angle.sin());
         nonagon_vector.push(to_screen * p);
     }

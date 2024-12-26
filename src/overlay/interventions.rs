@@ -184,28 +184,27 @@ pub fn get_intervention_shapes(
     icon_type: &str,
     intervention_engine: &str,
 ) -> Vec<Shape> {
-    let mut color = Color32::from_rgb(0, 0, 0);
+    let color = Color32::from_rgb(0, 0, 0);
     let mut fill_color = Color32::from_rgb(0, 0, 0);
-    fill_color = fill_color.gamma_multiply(0.0);
     
     let mut shapes: Vec<Shape> = Vec::new();
     
     for key in interventions.keys() {
         let radius = 3.0;
         let center = get_center_from_cell(dimensions, to_screen, key.clone());
-        let mut shape = Shape::circle_filled(center, radius, color);
+        let mut shape = Shape::circle_filled(center, radius, fill_color);
 
+        
         if icon_type == "almsivi" {
-            color = Color32::from_rgb(180, 25, 25);
             let tri = get_long_tri_at_cell(dimensions, to_screen, key.clone());
-            shape = Shape::convex_polygon(tri, fill_color, Stroke::new(3.0, color));
+            fill_color = Color32::from_rgb(180, 25, 25);
+            shape = Shape::convex_polygon(tri, fill_color, Stroke::new(1.5, color));
         }
         else if icon_type == "divine" {
-            color = Color32::from_gray(200);
-            let width = 2.0;
+            fill_color = Color32::from_gray(200); //.gamma_multiply(0.0);
             
             let nonagon = get_nonagon_at_cell(dimensions, to_screen, key.clone());
-            shape = Shape::convex_polygon(nonagon, fill_color, Stroke::new(width, color));
+            shape = Shape::convex_polygon(nonagon, fill_color, Stroke::new(1.5, color));
         }
 
         shapes.push(shape);
