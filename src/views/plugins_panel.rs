@@ -257,30 +257,29 @@ impl TemplateApp {
                 let divine_static_string = "DivineMarker";
                 for cell in plugin.objects_of_type::<Cell>() {
                     if cell.references.iter().any(|p| p.1.id == divine_static_string) {
-                        // println!("cell {}",cell.name);
-                        if cell.name.len() > 0 {
-                            let coord = (cell.data.grid.0, cell.data.grid.1);
+                        let coord = (cell.data.grid.0, cell.data.grid.1);
+                        // println!("divine node {} at {:?}",cell.name,coord);
 
-                            // manually handle fort frostmoth due to Bloodmoon + TotSP location clash
-                            if cell.name == "Fort Frostmoth" {
-                                let bloodmoon_coord = (-22, 17);
-                                let totsp_coord =(-15, 23); 
-                                if coord == totsp_coord {
-                                    if divine_interventions.contains_key(&bloodmoon_coord) {
-                                        divine_interventions.remove(&bloodmoon_coord);
-                                    }
-                                    divine_interventions.insert(coord, cell.clone());
+                        // manually handle fort frostmoth due to Bloodmoon + TotSP location clash
+                        if cell.name == "Fort Frostmoth" {
+                            let bloodmoon_coord = (-22, 17);
+                            let totsp_coord =(-15, 23); 
+                            if coord == totsp_coord {
+                                if divine_interventions.contains_key(&bloodmoon_coord) {
+                                    divine_interventions.remove(&bloodmoon_coord);
                                 }
-                                else if coord == bloodmoon_coord {
-                                    if !divine_interventions.contains_key(&totsp_coord) {
-                                        divine_interventions.insert(coord, cell.clone());
-                                    }
-                                }
-                            }
-                            else {
                                 divine_interventions.insert(coord, cell.clone());
                             }
+                            else if coord == bloodmoon_coord {
+                                if !divine_interventions.contains_key(&totsp_coord) {
+                                    divine_interventions.insert(coord, cell.clone());
+                                }
+                            }
                         }
+                        else {
+                            divine_interventions.insert(coord, cell.clone());
+                        }
+                        
                     }         
                 }
             }
