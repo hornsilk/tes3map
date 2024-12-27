@@ -14,6 +14,7 @@ use crate::PluginViewModel;
 static PNG_FILES: &[(&str, &[u8])] = &[
     ("tr_map", include_bytes!("pt_maps/tr_map.png")),
     ("pc_map", include_bytes!("pt_maps/pc_map.png")),
+    ("shotn_map", include_bytes!("pt_maps/shotn_map.png")),
 ];
 
 #[derive(Debug, Deserialize)]

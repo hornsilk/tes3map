@@ -26,6 +26,15 @@
             "min_y": -93,
             "max_y": -6,
             "file": "pc_map"
+        },
+        {
+            "name": "Sky_Main",
+            "grid_pxls": 40,
+            "min_x": -123,
+            "max_x": -27,
+            "min_y": -18,
+            "max_y": 66,
+            "file": "shotn_map"
         }
     ]
 }
