@@ -21,16 +21,18 @@ pub fn create_kingsstep_polygons(
     to_screen: RectTransform,
     dimensions: &Dimensions,
     interventions: &HashMap<CellKey, Cell>,
+    cell_records: &HashMap<CellKey, Cell>,
 ) -> Vec<Shape> {
     let n = interventions.keys().len();
-    let mut centers: Vec<(i32,i32)> = Vec::with_capacity(n as usize);
-    let mut colors: Vec<Color32> = Vec::with_capacity(n as usize);
-    let mut edge_lists: Vec<Vec<Shape>> = Vec::with_capacity(n as usize);
-
     let mut shapes: Vec<Shape> = Vec::new();
     if n < 1 {
         return shapes
     }
+
+    let mut centers: Vec<(i32,i32)> = Vec::with_capacity(n as usize);
+    let mut colors: Vec<Color32> = Vec::with_capacity(n as usize);
+    let mut edge_lists: Vec<Vec<Shape>> = Vec::with_capacity(n as usize);
+    let mask_color: Color32 = Color32::from_gray(0).gamma_multiply(0.8);
 
     for key in interventions.keys() {
         centers.push(key.clone());
@@ -49,40 +51,55 @@ pub fn create_kingsstep_polygons(
 
     for x in dimensions.min_x..dimensions.max_x+1 {
         for y in dimensions.min_y..dimensions.max_y+1{
-            let mut dist_map: HashMap<i32, (i32, (i32,i32))> = HashMap::with_capacity(n as usize);
-            for (i, (cx, cy)) in centers.clone().into_iter().enumerate() {
-                let dx = (cx - x).abs();
-                let dy = (cy - y).abs();
-                let kings_dist = max(dx, dy);
 
-                dist_map.insert(i as i32, (kings_dist, (cx,cy))); // keep (cx, cy), the node location, for breaking ties
-            }
-                        
-            let mut min_idx = 0;
-            let mut min_val = dist_map[&min_idx].0;
-            for i in 1..(n as i32) {
-                if dist_map[&i].0 < min_val {
-                    min_idx = i;
-                    min_val = dist_map[&min_idx].0;
+            let key = (x,y);
+            let cell_has_region = cell_records
+                .get(&key)
+                .and_then(|value| value.region.as_ref()) 
+                .map_or(false, |region| !region.is_empty()); 
+
+
+            if cell_has_region {
+                let mut dist_map: HashMap<i32, (i32, (i32,i32))> = HashMap::with_capacity(n as usize);
+                for (i, (cx, cy)) in centers.clone().into_iter().enumerate() {
+                    let dx = (cx - x).abs();
+                    let dy = (cy - y).abs();
+                    let kings_dist = max(dx, dy);
+
+                    dist_map.insert(i as i32, (kings_dist, (cx,cy))); // keep (cx, cy), the node location, for breaking ties
                 }
-                else if dist_map[&i].0 == min_val {
-                    let node_a = dist_map[&min_idx].1;
-                    let node_b = dist_map[&i].1;
-
-                    if break_ties_todd_howard_spiral((x,y),node_a,node_b) {
+                            
+                let mut min_idx = 0;
+                let mut min_val = dist_map[&min_idx].0;
+                for i in 1..(n as i32) {
+                    if dist_map[&i].0 < min_val {
                         min_idx = i;
                         min_val = dist_map[&min_idx].0;
                     }
+                    else if dist_map[&i].0 == min_val {
+                        let node_a = dist_map[&min_idx].1;
+                        let node_b = dist_map[&i].1;
+
+                        if break_ties_todd_howard_spiral((x,y),node_a,node_b) {
+                            min_idx = i;
+                            min_val = dist_map[&min_idx].0;
+                        }
+                    }
                 }
+                let color = colors[min_idx as usize].gamma_multiply(0.2);
+
+                let rect = get_rect_at_cell(dimensions, to_screen, (x,y));
+                let shape = Shape::rect_filled(rect, Rounding::default(), color);
+                shapes.push(shape);
+
+                let edges = rect_to_edges(rect);
+                edge_lists[min_idx as usize].extend(edges);
             }
-            let color = colors[min_idx as usize].gamma_multiply(0.2);
-
-            let rect = get_rect_at_cell(dimensions, to_screen, (x,y));
-            let shape = Shape::rect_filled(rect, Rounding::default(), color);
-            shapes.push(shape);
-
-            let edges = rect_to_edges(rect);
-            edge_lists[min_idx as usize].extend(edges);
+            else {
+                let rect = get_rect_at_cell(dimensions, to_screen, (x,y));
+                let shape = Shape::rect_filled(rect, Rounding::default(), mask_color);
+                shapes.push(shape)
+            }
         }
     }
 
@@ -179,6 +196,7 @@ pub fn get_intervention_shapes(
     to_screen: RectTransform,
     dimensions: &Dimensions,
     interventions: &HashMap<CellKey, Cell>,
+    cell_records: &HashMap<CellKey, Cell>,
     icon_type: &str,
     intervention_engine: &str,
 ) -> Vec<Shape> {
@@ -186,7 +204,15 @@ pub fn get_intervention_shapes(
     let mut fill_color = Color32::from_rgb(0, 0, 0);
     
     let mut shapes: Vec<Shape> = Vec::new();
-    
+        
+    if intervention_engine == "Pythagorean" {
+        let voronoi_cells = create_voronoi_polygons(to_screen, dimensions, interventions);
+        shapes.extend(voronoi_cells);
+    } else {
+        let kings_step_cells = create_kingsstep_polygons(to_screen, dimensions, interventions, cell_records);
+        shapes.extend(kings_step_cells);
+    }
+
     for key in interventions.keys() {
         let radius = 3.0;
         let center = get_center_from_cell(dimensions, to_screen, key.clone());
@@ -208,13 +234,6 @@ pub fn get_intervention_shapes(
         shapes.push(shape);
     }
 
-    if intervention_engine == "Pythagorean" {
-        let voronoi_cells = create_voronoi_polygons(to_screen, dimensions, interventions);
-        shapes.extend(voronoi_cells);
-    } else {
-        let kings_step_cells = create_kingsstep_polygons(to_screen, dimensions, interventions);
-        shapes.extend(kings_step_cells);
-    }
 
     shapes
 }

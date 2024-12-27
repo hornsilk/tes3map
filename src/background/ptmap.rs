@@ -17,7 +17,7 @@ static PNG_FILES: &[(&str, &[u8])] = &[
 ];
 
 #[derive(Debug, Deserialize)]
-struct Map {
+struct MapData {
     name: String,
     grid_pxls: i32,
     min_x: i32,
@@ -29,7 +29,7 @@ struct Map {
 
 #[derive(Debug, Deserialize)]
 struct MapsData {
-    maps: Vec<Map>,
+    maps: Vec<MapData>,
 }
 
 

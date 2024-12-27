@@ -418,6 +418,7 @@ impl TemplateApp {
                             transform,
                             &self.dimensions,
                             &self.almsivi_interventions,
+                            &self.cell_records,
                             "almsivi",
                             &self.intervention_engine,
                         );
@@ -428,6 +429,7 @@ impl TemplateApp {
                             transform,
                             &self.dimensions,
                             &self.divine_interventions,
+                            &self.cell_records,
                             "divine",
                             &self.intervention_engine,
                         );
