@@ -6,7 +6,7 @@ use tes3::esp::Cell;
 
 use crate::{
     dimensions::Dimensions, CellKey,
-    get_center_from_cell, get_long_tri_at_cell, get_nonagon_at_cell, get_rect_at_cell, 
+    get_center_from_cell, get_long_tri_at_cell, get_nonagon_at_cell, get_rect_at_cell, get_kyne_bird_at_cell,
     break_ties_todd_howard_spiral, rect_to_edges
 };
 use voronoice::*;
@@ -60,29 +60,32 @@ pub fn create_kingsstep_polygons(
 
 
             if cell_has_region {
-                let mut dist_map: HashMap<i32, (i32, (i32,i32))> = HashMap::with_capacity(n as usize);
-                for (i, (cx, cy)) in centers.clone().into_iter().enumerate() {
-                    let dx = (cx - x).abs();
-                    let dy = (cy - y).abs();
-                    let kings_dist = max(dx, dy);
-
-                    dist_map.insert(i as i32, (kings_dist, (cx,cy))); // keep (cx, cy), the node location, for breaking ties
-                }
-                            
                 let mut min_idx = 0;
-                let mut min_val = dist_map[&min_idx].0;
-                for i in 1..(n as i32) {
-                    if dist_map[&i].0 < min_val {
-                        min_idx = i;
-                        min_val = dist_map[&min_idx].0;
+                if centers.len() > 1 {
+                    // find closest node
+                    let mut dist_map: HashMap<i32, (i32, (i32,i32))> = HashMap::with_capacity(n as usize);
+                    for (i, (cx, cy)) in centers.clone().into_iter().enumerate() {
+                        let dx = (cx - x).abs();
+                        let dy = (cy - y).abs();
+                        let kings_dist = max(dx, dy);
+    
+                        dist_map.insert(i as i32, (kings_dist, (cx,cy))); // keep (cx, cy), the node location, for breaking ties
                     }
-                    else if dist_map[&i].0 == min_val {
-                        let node_a = dist_map[&min_idx].1;
-                        let node_b = dist_map[&i].1;
-
-                        if break_ties_todd_howard_spiral((x,y),node_a,node_b) {
+                                
+                    let mut min_val = dist_map[&min_idx].0;
+                    for i in 1..(n as i32) {
+                        if dist_map[&i].0 < min_val {
                             min_idx = i;
                             min_val = dist_map[&min_idx].0;
+                        }
+                        else if dist_map[&i].0 == min_val {
+                            let node_a = dist_map[&min_idx].1;
+                            let node_b = dist_map[&i].1;
+    
+                            if break_ties_todd_howard_spiral((x,y),node_a,node_b) {
+                                min_idx = i;
+                                min_val = dist_map[&min_idx].0;
+                            }
                         }
                     }
                 }
@@ -206,8 +209,10 @@ pub fn get_intervention_shapes(
     let mut shapes: Vec<Shape> = Vec::new();
         
     if intervention_engine == "Pythagorean" {
-        let voronoi_cells = create_voronoi_polygons(to_screen, dimensions, interventions);
-        shapes.extend(voronoi_cells);
+        if interventions.len() > 1 {
+            let voronoi_cells = create_voronoi_polygons(to_screen, dimensions, interventions);
+            shapes.extend(voronoi_cells);
+        }
     } else {
         let kings_step_cells = create_kingsstep_polygons(to_screen, dimensions, interventions, cell_records);
         shapes.extend(kings_step_cells);
@@ -229,6 +234,13 @@ pub fn get_intervention_shapes(
             
             let nonagon = get_nonagon_at_cell(dimensions, to_screen, key.clone());
             shape = Shape::convex_polygon(nonagon, fill_color, Stroke::new(1.5, color));
+        }
+        else if  icon_type == "kyne" {
+            fill_color = Color32::from_rgb(0, 100, 0); //.gamma_multiply(0.0);
+            
+            let nonagon = get_kyne_bird_at_cell(dimensions, to_screen, key.clone());
+            shape = Shape::convex_polygon(nonagon, fill_color, Stroke::new(1.5, color));
+            
         }
 
         shapes.push(shape);

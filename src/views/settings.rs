@@ -96,6 +96,7 @@ impl TemplateApp {
         ui.checkbox(&mut self.ui_data.overlay_cities, "Show cities");
         ui.checkbox(&mut self.ui_data.overlay_alm_interventions, "Show almsivi intervention");
         ui.checkbox(&mut self.ui_data.overlay_div_interventions, "Show divine intervention");
+        ui.checkbox(&mut self.ui_data.overlay_kyn_interventions, "Show kyne intervention");
         ui.checkbox(&mut self.ui_data.overlay_travel, "Show travel");
         ui.checkbox(&mut self.ui_data.overlay_conflicts, "Show conflicts");
 

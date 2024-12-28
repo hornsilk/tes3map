@@ -136,6 +136,7 @@ impl TemplateApp {
         self.cell_records.clear();
         self.almsivi_interventions.clear();
         self.divine_interventions.clear();
+        self.kyne_interventions.clear();
         self.cell_conflicts.clear();
 
         // load plugins into memory
@@ -148,6 +149,7 @@ impl TemplateApp {
         let mut npcs: HashMap<String, CellKey> = HashMap::default();
         let mut almsivi_interventions: HashMap<CellKey, Cell> = HashMap::default();
         let mut divine_interventions: HashMap<CellKey, Cell> = HashMap::default();
+        let mut kyne_interventions: HashMap<CellKey, Cell> = HashMap::default();
 
         let enabled_plugins: Vec<&PluginViewModel> = self
             .plugins
@@ -282,6 +284,15 @@ impl TemplateApp {
                         
                     }         
                 }
+
+                // add kyne intervention - T_Aid_KyneInterventionMarker
+                let kyne_static_string = "T_Aid_KyneInterventionMarker";
+                for cell in plugin.objects_of_type::<Cell>() {
+                    if cell.references.iter().any(|p| p.1.id == kyne_static_string) {
+                        let coord = (cell.data.grid.0, cell.data.grid.1);
+                        kyne_interventions.insert(coord, cell.clone());
+                    }                    
+                }
             }
         }
         
@@ -317,6 +328,7 @@ impl TemplateApp {
         self.cell_records = cells;
         self.almsivi_interventions = almsivi_interventions;
         self.divine_interventions = divine_interventions;
+        self.kyne_interventions = kyne_interventions;
         // self.land_ids = land_id_map;
     }
 }

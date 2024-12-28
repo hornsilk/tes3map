@@ -114,6 +114,7 @@ pub struct SavedData {
     pub overlay_cities: bool,
     pub overlay_alm_interventions: bool,
     pub overlay_div_interventions: bool,
+    pub overlay_kyn_interventions: bool,
     pub overlay_travel: bool,
     pub overlay_conflicts: bool,
 
@@ -532,6 +533,42 @@ fn get_nonagon_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: C
     }
 
     nonagon_vector
+}
+
+fn get_kyne_bird_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Vec<Pos2> {
+    let p00 = dimensions.tranform_to_canvas(key);
+
+    let p0 = Pos2::new(p00.x + 75.0/150.0, p00.y + 30.0/150.0);
+
+    let p1 = Pos2::new(p00.x + 65.0/150.0, p00.y + 45.0/150.0);
+    let p2 = Pos2::new(p00.x + 10.0/150.0, p00.y + 55.0/150.0);
+    let p3 = Pos2::new(p00.x + 35.0/150.0, p00.y + 75.0/150.0);
+    let p4 = Pos2::new(p00.x + 60.0/150.0, p00.y + 80.0/150.0);
+    let p5 = Pos2::new(p00.x + 50.0/150.0, p00.y + 100.0/150.0);
+
+    let p6 = Pos2::new(p00.x + 75.0/150.0, p00.y + 105.0/150.0);
+
+    let p5_b = Pos2::new(p00.x + (150.0 - 50.0)/150.0, p00.y + 100.0/150.0);
+    let p4_b = Pos2::new(p00.x + (150.0 - 60.0)/150.0, p00.y + 80.0/150.0);
+    let p3_b = Pos2::new(p00.x + (150.0 - 35.0)/150.0, p00.y + 75.0/150.0);
+    let p2_b = Pos2::new(p00.x + (150.0 - 10.0)/150.0, p00.y + 55.0/150.0);
+    let p1_b = Pos2::new(p00.x + (150.0 - 65.0)/150.0, p00.y + 45.0/150.0);
+    
+    let mut bird_vector: Vec<Pos2> = Vec::with_capacity(12 as usize);
+    bird_vector.push(to_screen * p0);
+    bird_vector.push(to_screen * p1);
+    bird_vector.push(to_screen * p2);
+    bird_vector.push(to_screen * p3);
+    bird_vector.push(to_screen * p4);
+    bird_vector.push(to_screen * p5);
+    bird_vector.push(to_screen * p6);
+    bird_vector.push(to_screen * p5_b);
+    bird_vector.push(to_screen * p4_b);
+    bird_vector.push(to_screen * p3_b);
+    bird_vector.push(to_screen * p2_b);
+    bird_vector.push(to_screen * p1_b);
+   
+    bird_vector
 }
 
 fn break_ties_todd_howard_spiral(

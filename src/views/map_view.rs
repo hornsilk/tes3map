@@ -128,6 +128,14 @@ impl TemplateApp {
             );
             painter.extend(shapes);
         }
+        if self.ui_data.overlay_kyn_interventions {
+            let shapes = get_intervention_shapes(
+                to_screen, &self.dimensions, 
+                &self.kyne_interventions, &self.cell_records, 
+                "kyne", &self.intervention_engine
+            );
+            painter.extend(shapes);
+        }
         if self.ui_data.overlay_cities {
             let shapes = get_cities_shapes(to_screen, &self.dimensions, &self.cell_records);
             painter.extend(shapes);
