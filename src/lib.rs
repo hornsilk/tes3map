@@ -6,7 +6,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use egui::{emath::RectTransform, Color32, ColorImage, Pos2, Rect};
+use egui::{emath::RectTransform, Color32, ColorImage, Pos2, Rect, Vec2, Shape};
+use egui::epaint::PathStroke;
+
 use image::{
     error::{ImageFormatHint, UnsupportedError, UnsupportedErrorKind},
     DynamicImage, ImageError, RgbaImage,
@@ -22,6 +24,12 @@ pub use app::TemplateApp;
 use dimensions::Dimensions;
 
 use crate::app::TooltipInfo;
+
+use rand::Rng;
+use rand::rngs::StdRng;
+use rand::SeedableRng;
+use sha2::{Sha256, Digest};
+use std::f32::consts::PI;
 
 mod app;
 mod background;
@@ -44,6 +52,7 @@ pub enum EBackground {
     HeightMap,
     #[default]
     GameMap,
+    PTMap,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -103,6 +112,9 @@ pub struct SavedData {
     pub overlay_region: bool,
     pub overlay_grid: bool,
     pub overlay_cities: bool,
+    pub overlay_alm_interventions: bool,
+    pub overlay_div_interventions: bool,
+    pub overlay_kyn_interventions: bool,
     pub overlay_travel: bool,
     pub overlay_conflicts: bool,
 
@@ -483,11 +495,156 @@ pub fn height_from_screen_space(
     heights.get(i).copied()
 }
 
+fn get_center_from_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Pos2 {
+    let p00 = dimensions.tranform_to_canvas(key);
+    let p_center = Pos2::new(p00.x + 0.5, p00.y + 0.5);
+    to_screen * p_center
+}
+
 fn get_rect_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Rect {
     let p00 = dimensions.tranform_to_canvas(key);
     let p11 = Pos2::new(p00.x + 1.0, p00.y + 1.0);
     Rect::from_two_pos(to_screen * p00, to_screen * p11)
 }
+
+fn get_long_tri_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Vec<Pos2> {
+    let p00 = dimensions.tranform_to_canvas(key);
+
+    let scale = 0.7;
+    let p_a =  Pos2::new(p00.x - 0.5 * scale + 0.55, p00.y - 0.5 * scale + 0.5); //scale = 1: (0.05, 0) - top left
+    let p_b =  Pos2::new(p00.x + 0.5, p00.y + 0.5 * scale + 0.45);               //scale = 1:  (0.5, 0.95) - bottom center
+    let p_c =  Pos2::new(p00.x + 0.5 * scale + 0.45, p00.y - 0.5 * scale + 0.5); //scale = 1: (0.95, 0) - top right
+
+    let triangle_vector = vec![to_screen * p_a, to_screen * p_b, to_screen * p_c];
+    triangle_vector
+}
+
+fn get_nonagon_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Vec<Pos2> {
+    let p00 = dimensions.tranform_to_canvas(key);
+    let p_center = Pos2::new(p00.x + 0.5, p00.y + 0.5);
+    let scale = 0.3;
+    let direction = 0.25;
+    
+    let mut nonagon_vector: Vec<Pos2> = Vec::with_capacity(9 as usize);
+    for i in 0..9 {
+        let angle = (direction + (i as f32) * 2.0 / 9.0) * PI;
+        let p = Pos2::new(p_center.x + scale * angle.cos(), p_center.y + scale * angle.sin());
+        nonagon_vector.push(to_screen * p);
+    }
+
+    nonagon_vector
+}
+
+fn get_kyne_bird_at_cell(dimensions: &Dimensions, to_screen: RectTransform, key: CellKey) -> Vec<Pos2> {
+    let p00 = dimensions.tranform_to_canvas(key);
+
+    let p0 = Pos2::new(p00.x + 75.0/150.0, p00.y + 30.0/150.0);
+
+    let p1 = Pos2::new(p00.x + 65.0/150.0, p00.y + 45.0/150.0);
+    let p2 = Pos2::new(p00.x + 10.0/150.0, p00.y + 55.0/150.0);
+    let p3 = Pos2::new(p00.x + 35.0/150.0, p00.y + 75.0/150.0);
+    let p4 = Pos2::new(p00.x + 60.0/150.0, p00.y + 80.0/150.0);
+    let p5 = Pos2::new(p00.x + 50.0/150.0, p00.y + 100.0/150.0);
+
+    let p6 = Pos2::new(p00.x + 75.0/150.0, p00.y + 105.0/150.0);
+
+    let p5_b = Pos2::new(p00.x + (150.0 - 50.0)/150.0, p00.y + 100.0/150.0);
+    let p4_b = Pos2::new(p00.x + (150.0 - 60.0)/150.0, p00.y + 80.0/150.0);
+    let p3_b = Pos2::new(p00.x + (150.0 - 35.0)/150.0, p00.y + 75.0/150.0);
+    let p2_b = Pos2::new(p00.x + (150.0 - 10.0)/150.0, p00.y + 55.0/150.0);
+    let p1_b = Pos2::new(p00.x + (150.0 - 65.0)/150.0, p00.y + 45.0/150.0);
+    
+    let mut bird_vector: Vec<Pos2> = Vec::with_capacity(12 as usize);
+    bird_vector.push(to_screen * p0);
+    bird_vector.push(to_screen * p1);
+    bird_vector.push(to_screen * p2);
+    bird_vector.push(to_screen * p3);
+    bird_vector.push(to_screen * p4);
+    bird_vector.push(to_screen * p5);
+    bird_vector.push(to_screen * p6);
+    bird_vector.push(to_screen * p5_b);
+    bird_vector.push(to_screen * p4_b);
+    bird_vector.push(to_screen * p3_b);
+    bird_vector.push(to_screen * p2_b);
+    bird_vector.push(to_screen * p1_b);
+   
+    bird_vector
+}
+
+fn break_ties_todd_howard_spiral(
+    location: (i32, i32),
+    node_a: (i32, i32),
+    node_b: (i32, i32),
+) -> bool {
+    // node_a and node_b are intervention locations
+    // returns true if node_b is "closer" to location than node_a based on vanilla game engine logic
+    // https://gitlab.com/OpenMW/openmw/-/merge_requests/4401
+
+    // my method: find the angle from location to node_i
+    // starting at -135 degrees (-90 - 45 degrees, SW corner) and rotating clockwise, (same as 225 degrees)
+    //                      todd breaks ties based on which angle you hit first
+    let theta_offset = -135.0 * PI / 180.0;
+
+
+    let v_a: Vec2 = Vec2::new((node_a.0 - location.0) as f32, (node_a.1 - location.1) as f32);
+    let v_b: Vec2 = Vec2::new((node_b.0 - location.0) as f32, (node_b.1 - location.1) as f32);
+    let mut theta_a = v_a.angle();
+    let mut theta_b = v_b.angle();
+
+    // assert!(theta_a >= -PI);
+    // assert!(theta_b >= -PI);
+    // assert!(theta_a <= PI);
+    // assert!(theta_b <= PI);
+
+    theta_a = theta_a - theta_offset;
+    theta_b = theta_b - theta_offset;
+    if theta_a < 0.0 { theta_a = theta_a + 2.0*PI;}
+    if theta_b < 0.0 { theta_b = theta_b + 2.0*PI;}
+
+    theta_b < theta_a
+}
+
+fn string_to_seed(seed: &str) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(seed);
+    let hash = hasher.finalize();
+    
+    // Return the hash as a fixed-size array (32 bytes)
+    let mut seed_array = [0u8; 32];
+    seed_array.copy_from_slice(&hash);
+    seed_array
+}
+
+fn generate_random_color(seed: &str) -> (u8, u8, u8) {
+    let rng_seed = string_to_seed(seed);
+    let mut rng = StdRng::from_seed(rng_seed);
+
+    // Generate random RGB values
+    let r = rng.gen_range(0..=255);
+    let g = rng.gen_range(0..=255);
+    let b = rng.gen_range(0..=255);
+    
+    (r, g, b)
+}
+
+fn rect_to_edges(rect: Rect) -> Vec<Shape> {
+    let color = Color32::from_gray(0);
+    let width = 1.0;
+
+    let lt = rect.left_top();
+    let rt = rect.right_top();
+    let lb = rect.left_bottom();
+    let rb = rect.right_bottom();
+    
+    let mut edge_vec: Vec<Shape> = Vec::with_capacity(4);
+    edge_vec.push(Shape::LineSegment{ points: [lt,rt], stroke: PathStroke::new(width, color) });
+    edge_vec.push(Shape::LineSegment{ points: [lb,rb], stroke: PathStroke::new(width, color) });
+    edge_vec.push(Shape::LineSegment{ points: [lt,lb], stroke: PathStroke::new(width, color) });
+    edge_vec.push(Shape::LineSegment{ points: [rt,rb], stroke: PathStroke::new(width, color) });
+
+    edge_vec
+}
+
 
 //////////////////////////////////////////
 // TES3

@@ -134,6 +134,9 @@ impl TemplateApp {
         self.regn_records.clear();
         self.travel_edges.clear();
         self.cell_records.clear();
+        self.almsivi_interventions.clear();
+        self.divine_interventions.clear();
+        self.kyne_interventions.clear();
         self.cell_conflicts.clear();
 
         // load plugins into memory
@@ -144,6 +147,9 @@ impl TemplateApp {
         let mut cell_conflicts: HashMap<CellKey, Vec<u64>> = HashMap::default();
         let mut travels: HashMap<String, (Vec<CellKey>, String)> = HashMap::default();
         let mut npcs: HashMap<String, CellKey> = HashMap::default();
+        let mut almsivi_interventions: HashMap<CellKey, Cell> = HashMap::default();
+        let mut divine_interventions: HashMap<CellKey, Cell> = HashMap::default();
+        let mut kyne_interventions: HashMap<CellKey, Cell> = HashMap::default();
 
         let enabled_plugins: Vec<&PluginViewModel> = self
             .plugins
@@ -239,9 +245,57 @@ impl TemplateApp {
                 for region in plugin.objects_of_type::<Region>() {
                     self.regn_records.insert(region.id.clone(), region.clone());
                 }
+
+                // add almsivi interventions
+                let almsivi_static_string = "TempleMarker";
+                for cell in plugin.objects_of_type::<Cell>() {
+                    if cell.references.iter().any(|p| p.1.id == almsivi_static_string) {
+                        let coord = (cell.data.grid.0, cell.data.grid.1);
+                        almsivi_interventions.insert(coord, cell.clone());
+                    }                    
+                }
+                
+                // add divine interventions
+                let divine_static_string = "DivineMarker";
+                for cell in plugin.objects_of_type::<Cell>() {
+                    if cell.references.iter().any(|p| p.1.id == divine_static_string) {
+                        let coord = (cell.data.grid.0, cell.data.grid.1);
+                        // println!("divine node {} at {:?}",cell.name,coord);
+
+                        // manually handle fort frostmoth due to Bloodmoon + TotSP location clash
+                        if cell.name == "Fort Frostmoth" {
+                            let bloodmoon_coord = (-22, 17);
+                            let totsp_coord =(-15, 23); 
+                            if coord == totsp_coord {
+                                if divine_interventions.contains_key(&bloodmoon_coord) {
+                                    divine_interventions.remove(&bloodmoon_coord);
+                                }
+                                divine_interventions.insert(coord, cell.clone());
+                            }
+                            else if coord == bloodmoon_coord {
+                                if !divine_interventions.contains_key(&totsp_coord) {
+                                    divine_interventions.insert(coord, cell.clone());
+                                }
+                            }
+                        }
+                        else {
+                            divine_interventions.insert(coord, cell.clone());
+                        }
+                        
+                    }         
+                }
+
+                // add kyne intervention - T_Aid_KyneInterventionMarker
+                let kyne_static_string = "T_Aid_KyneInterventionMarker";
+                for cell in plugin.objects_of_type::<Cell>() {
+                    if cell.references.iter().any(|p| p.1.id == kyne_static_string) {
+                        let coord = (cell.data.grid.0, cell.data.grid.1);
+                        kyne_interventions.insert(coord, cell.clone());
+                    }                    
+                }
             }
         }
-
+        
         // travel overlay
         let mut edges: Vec<(String, (CellKey, CellKey))> = vec![];
         for (key, start) in npcs.clone() {
@@ -264,14 +318,17 @@ impl TemplateApp {
             }
         }
         self.travel_edges = ordered_edges;
-
+        
         // get final list of cells
         for (k, v) in cell_conflicts.iter().filter(|p| p.1.len() > 1) {
             self.cell_conflicts.insert(*k, v.to_vec());
         }
-
+        
         self.land_records = land_records;
         self.cell_records = cells;
+        self.almsivi_interventions = almsivi_interventions;
+        self.divine_interventions = divine_interventions;
+        self.kyne_interventions = kyne_interventions;
         // self.land_ids = land_id_map;
     }
 }

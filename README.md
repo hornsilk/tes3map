@@ -13,6 +13,7 @@ A small tool to draw a map of all loaded esps.
   - regions
   - grid
   - cities
+  - intervention maps
   - travel routes
   - cell conflicts
 - Tool tips
@@ -22,7 +23,9 @@ A small tool to draw a map of all loaded esps.
 ## Usage
 
 - download/compile `tes3map.exe`
+  - build with rust using `cargo build`
 - put into Data Files and run
+  - run with rust using `cargo run`
 - zoom with Ctrl + Mousewheel
 - reset with middle mouse button
 

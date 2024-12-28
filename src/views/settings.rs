@@ -47,10 +47,39 @@ impl TemplateApp {
                 {
                     clicked = true;
                 }
+                if ui
+                .selectable_value(
+                    &mut self.ui_data.background,
+                    EBackground::PTMap,
+                    "Project Tamriel map",
+                )
+                .clicked()
+                {
+                    clicked = true;
+                }
 
                 if clicked && self.background_handle.is_some() {
                     self.reload_background(ctx, None, false, false);
                 }
+            });
+        
+
+        ui.label("Intervention Engine");
+        let vanilla_str = "By Cell";
+        let openmw_str = "Pythagorean";
+        egui::ComboBox::from_id_source("intervention engine")
+            .selected_text(format!("{:?}", self.intervention_engine))
+            .show_ui(ui, |ui| {
+                ui.selectable_value(
+                    &mut self.intervention_engine,
+                    vanilla_str.to_string(), 
+                    vanilla_str
+                );
+                ui.selectable_value(
+                    &mut self.intervention_engine,
+                    openmw_str.to_string(), 
+                    openmw_str
+                );
             });
 
         ui.separator();
@@ -65,6 +94,9 @@ impl TemplateApp {
         ui.checkbox(&mut self.ui_data.overlay_region, "Show regions");
         ui.checkbox(&mut self.ui_data.overlay_grid, "Show cell grid");
         ui.checkbox(&mut self.ui_data.overlay_cities, "Show cities");
+        ui.checkbox(&mut self.ui_data.overlay_alm_interventions, "Show almsivi intervention");
+        ui.checkbox(&mut self.ui_data.overlay_div_interventions, "Show divine intervention");
+        ui.checkbox(&mut self.ui_data.overlay_kyn_interventions, "Show kyne intervention");
         ui.checkbox(&mut self.ui_data.overlay_travel, "Show travel");
         ui.checkbox(&mut self.ui_data.overlay_conflicts, "Show conflicts");
 

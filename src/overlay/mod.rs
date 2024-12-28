@@ -4,3 +4,4 @@ pub mod grid;
 pub mod paths;
 pub mod regions;
 pub mod travel;
+pub mod interventions;

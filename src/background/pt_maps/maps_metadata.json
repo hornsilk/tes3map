@@ -1,0 +1,40 @@
+{
+    "maps": [
+        {
+            "name": "Morrowind",
+            "grid_pxls": 40,
+            "min_x": -42,
+            "max_x": 62,
+            "min_y": -64,
+            "max_y": 41,
+            "file": "tr_map"    
+        },
+        {
+            "name": "TR_Mainland",
+            "grid_pxls": 40,
+            "min_x": -42,
+            "max_x": 62,
+            "min_y": -64,
+            "max_y": 41,
+            "file": "tr_map"
+        },
+        {
+            "name": "Cyr_Main",
+            "grid_pxls": 40,
+            "min_x": -142,
+            "max_x": -6,
+            "min_y": -93,
+            "max_y": -6,
+            "file": "pc_map"
+        },
+        {
+            "name": "Sky_Main",
+            "grid_pxls": 40,
+            "min_x": -123,
+            "max_x": -27,
+            "min_y": -18,
+            "max_y": 66,
+            "file": "shotn_map"
+        }
+    ]
+}

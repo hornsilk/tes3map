@@ -6,7 +6,7 @@ use log::{debug, error};
 use tes3::esp::{Landscape, Region};
 
 use background::{
-    gamemap::generate_map, heightmap::generate_heightmap, landscape::compute_landscape_image,
+    gamemap::generate_map, heightmap::generate_heightmap, landscape::compute_landscape_image, ptmap::generate_ptmap,
 };
 use overlay::{paths::get_overlay_path_image, regions::get_region_shapes};
 
@@ -54,7 +54,17 @@ pub struct TemplateApp {
     pub regn_records: HashMap<String, Region>,
     #[serde(skip)]
     pub cell_records: HashMap<CellKey, Cell>,
+   
+    // intervention spells
+    #[serde(skip)]
+    pub almsivi_interventions: HashMap<CellKey, Cell>,
+    #[serde(skip)]
+    pub divine_interventions: HashMap<CellKey, Cell>,
+    #[serde(skip)]
+    pub kyne_interventions: HashMap<CellKey, Cell>,
 
+    pub intervention_engine: String,
+    
     // overlays
     #[serde(skip)]
     pub travel_edges: HashMap<String, Vec<(CellKey, CellKey)>>,
@@ -234,6 +244,7 @@ impl TemplateApp {
             }
             EBackground::HeightMap => Some(self.get_heightmap_image()),
             EBackground::GameMap => Some(self.get_gamemap_image()),
+            EBackground::PTMap => Some(self.get_ptmap_image()),
         };
 
         if let Some(image) = image {
@@ -256,6 +267,10 @@ impl TemplateApp {
 
     pub fn get_gamemap_image(&mut self) -> ColorImage {
         generate_map(&self.dimensions, &self.land_records)
+    }
+
+    pub fn get_ptmap_image(&mut self) -> ColorImage {
+        generate_ptmap(&self.dimensions, &self.plugins)
     }
 
     pub fn get_landscape_image(&mut self) -> ColorImage {
@@ -287,6 +302,7 @@ impl TemplateApp {
             EBackground::Landscape => "l",
             EBackground::HeightMap => "h",
             EBackground::GameMap => "g",
+            EBackground::PTMap => "p",
         };
         let first_plugin = self
             .plugins
@@ -318,6 +334,9 @@ impl TemplateApp {
                 }
                 EBackground::GameMap => {
                     background = Some(self.get_gamemap_image());
+                }
+                EBackground::PTMap => {
+                    background = Some(self.get_ptmap_image());
                 }
             }
 
@@ -358,6 +377,9 @@ impl TemplateApp {
                 let any_overlay = self.ui_data.overlay_region
                     || self.ui_data.overlay_grid
                     || self.ui_data.overlay_cities
+                    || self.ui_data.overlay_alm_interventions
+                    || self.ui_data.overlay_div_interventions
+                    || self.ui_data.overlay_kyn_interventions
                     || self.ui_data.overlay_travel
                     || self.ui_data.overlay_conflicts;
 
@@ -376,7 +398,7 @@ impl TemplateApp {
 
                     let mut all_shapes = vec![];
 
-                    // order is: paths, regions, grid, cities, travel, conflicts
+                    // order is: paths, regions, grid, interventions, cities, travel, conflicts
                     // regions
                     if self.ui_data.overlay_region {
                         let shapes = get_region_shapes(
@@ -392,6 +414,42 @@ impl TemplateApp {
                         let shapes = overlay::grid::get_grid_shapes(transform, &self.dimensions);
                         all_shapes.extend(shapes);
                     }
+                    
+                    // interventions
+                    if self.ui_data.overlay_alm_interventions {
+                        let shapes = overlay::interventions::get_intervention_shapes(
+                            transform,
+                            &self.dimensions,
+                            &self.almsivi_interventions,
+                            &self.cell_records,
+                            "almsivi",
+                            &self.intervention_engine,
+                        );
+                        all_shapes.extend(shapes);
+                    }
+                    if self.ui_data.overlay_div_interventions {
+                        let shapes = overlay::interventions::get_intervention_shapes(
+                            transform,
+                            &self.dimensions,
+                            &self.divine_interventions,
+                            &self.cell_records,
+                            "divine",
+                            &self.intervention_engine,
+                        );
+                        all_shapes.extend(shapes);
+                    }
+                    if self.ui_data.overlay_kyn_interventions {
+                        let shapes = overlay::interventions::get_intervention_shapes(
+                            transform,
+                            &self.dimensions,
+                            &self.kyne_interventions,
+                            &self.cell_records,
+                            "kyne",
+                            &self.intervention_engine,
+                        );
+                        all_shapes.extend(shapes);
+                    }
+                    
                     // cities
                     if self.ui_data.overlay_cities {
                         let shapes = overlay::cities::get_cities_shapes(
@@ -401,6 +459,7 @@ impl TemplateApp {
                         );
                         all_shapes.extend(shapes);
                     }
+
                     // travel
                     if self.ui_data.overlay_travel {
                         let shapes = overlay::travel::get_travel_shapes(

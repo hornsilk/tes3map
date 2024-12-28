@@ -6,6 +6,7 @@ use tes3::esp::Cell;
 
 use crate::{dimensions::Dimensions, get_rect_at_cell, CellKey};
 
+
 pub fn get_cities_shapes(
     to_screen: RectTransform,
     dimensions: &Dimensions,
