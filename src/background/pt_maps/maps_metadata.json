@@ -4,18 +4,18 @@
             "name": "Morrowind",
             "grid_pxls": 40,
             "min_x": -42,
-            "max_x": 62,
-            "min_y": -64,
-            "max_y": 41,
+            "max_x": 60,
+            "min_y": -62,
+            "max_y": 50,
             "file": "tr_map"    
         },
         {
             "name": "TR_Mainland",
             "grid_pxls": 40,
             "min_x": -42,
-            "max_x": 62,
-            "min_y": -64,
-            "max_y": 41,
+            "max_x": 60,
+            "min_y": -62,
+            "max_y": 50,
             "file": "tr_map"
         },
         {
