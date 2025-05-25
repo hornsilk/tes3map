@@ -522,10 +522,11 @@ impl TemplateApp {
                                     let color = shape.fill;
                                     let rect = shape.rect;
 
+                                    let alpha = std::cmp::max(color.a(),170);
                                     let img = ImageBuffer::from_pixel(
                                         rect.width() as u32,
                                         rect.height() as u32,
-                                        image::Rgba([color.r(), color.g(), color.b(), color.a()]),
+                                        image::Rgba([color.r(), color.g(), color.b(), alpha]),
                                     );
                                     imageops::overlay(
                                         &mut bg_image,
@@ -543,7 +544,24 @@ impl TemplateApp {
                                         let p1 = points[i];
                                         let p2 = points[i + 1];
 
-                                        let img = ImageBuffer::from_fn(
+                                        let dx =(p1.x - p2.x).abs() as u32;
+                                        let dy =(p1.y - p2.y).abs() as u32;
+
+                                        let mut img = image::RgbaImage::new(1,1);
+                                        if dx > dy {
+                                            img = image::RgbaImage::new(dx,1);
+                                            for x in 0..dx {
+                                                img.put_pixel(x, 0, image::Rgba([ color.r(),color.g(),color.b(),255]));
+                                            }
+
+                                        } else if dy > dx {
+                                            img = image::RgbaImage::new(1,dy);
+                                            for y in 0..dy {
+                                                img.put_pixel( 0,y, image::Rgba([ color.r(),color.g(),color.b(),255]));
+                                            }
+                                        }
+
+                                        let _old_img = ImageBuffer::from_fn(
                                             (p1.distance(p2) + 1.0) as u32,
                                             stroke_width as u32,
                                             |x, _y| {
@@ -552,7 +570,7 @@ impl TemplateApp {
                                                         color.r(),
                                                         color.g(),
                                                         color.b(),
-                                                        color.a(),
+                                                        255,
                                                     ])
                                                 } else {
                                                     image::Rgba([0, 0, 0, 0])
