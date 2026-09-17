@@ -244,6 +244,7 @@ fn overlay_colors_with_alpha(color1: Color32, color2: Color32, alpha1: f32) -> C
     Color32::from_rgba_premultiplied(r, g, b, 255)
 }
 
+#[allow(dead_code)]
 fn color_image_to_dynamic_image(color_image: &ColorImage) -> Result<DynamicImage, ImageError> {
     let pixels = color_image.as_raw();
 
